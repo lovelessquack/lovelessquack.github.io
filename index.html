@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="文字分享卡片生成器 - 生成精美的文字分享图">
+    <title>文字分享卡片生成器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=ZCOOL+KuaiLe&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Background -->
+    <div class="bg-ornament bg-ornament-1"></div>
+    <div class="bg-ornament bg-ornament-2"></div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-icon">✦</div>
+            <h1>文字卡片</h1>
+            <p class="subtitle">将文字变成值得分享的精美图片</p>
+        </header>
+
+        <main class="main-content">
+            <!-- ====== 左：输入区 ====== -->
+            <section class="input-panel">
+                <h2 class="section-title">
+                    <span class="section-icon">✎</span>
+                    编辑内容
+                </h2>
+
+                <div class="form-group">
+                    <label for="cardTitle" class="form-label">标题 <span class="tag tag-optional">选填</span></label>
+                    <input type="text" id="cardTitle" class="form-input" placeholder="给卡片起个标题..." maxlength="30">
+                </div>
+
+                <div class="form-group">
+                    <label for="cardContent" class="form-label">正文 <span class="tag tag-required">必填</span></label>
+                    <textarea id="cardContent" class="form-textarea" placeholder="在这里写下你想分享的文字..." rows="8"></textarea>
+                    <div class="char-count" id="charCount">0 字</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cardAuthor" class="form-label">署名 <span class="tag tag-optional">选填</span></label>
+                    <input type="text" id="cardAuthor" class="form-input" placeholder="作者、出处或昵称..." maxlength="20" value="Potato土豆子">
+                </div>
+
+                <div class="form-group">
+                    <label for="cardSubtitle" class="form-label">签名/简介 <span class="tag tag-optional">限定社交样式可见</span></label>
+                    <input type="text" id="cardSubtitle" class="form-input" placeholder="用于社交样式的简介..." maxlength="30" value="永远保持好奇心~">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">卡片风格</label>
+                    <div class="style-grid" id="styleSelector">
+                        <button class="style-card" data-style="snow">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#fff,#eef1f5);border:1px solid #ddd"></div>
+                            <span>霜雪</span>
+                        </button>
+                        <button class="style-card" data-style="ink">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#1a1a2e,#16213e)"></div>
+                            <span>水墨</span>
+                        </button>
+                        <button class="style-card" data-style="paper">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#fef9ef,#f5e6ca)"></div>
+                            <span>宣纸</span>
+                        </button>
+                        <button class="style-card" data-style="night">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#0f0c29,#302b63)"></div>
+                            <span>星夜</span>
+                        </button>
+                        <button class="style-card" data-style="bamboo">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#1a3c2a,#2d6a4f)"></div>
+                            <span>翠竹</span>
+                        </button>
+                        <button class="style-card" data-style="rouge">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#3a1c2e,#7a2e5a)"></div>
+                            <span>胭脂</span>
+                        </button>
+                        <button class="style-card active" data-style="social">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#1b1b20,#2a2a32)"></div>
+                            <span>社交</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-generate" id="generateBtn">
+                    <span class="btn-spark">⚡</span>
+                    生成卡片
+                </button>
+            </section>
+
+            <!-- ====== 右：预览区 ====== -->
+            <section class="preview-panel">
+                <h2 class="section-title">
+                    <span class="section-icon">☷</span>
+                    卡片预览
+                </h2>
+
+                <div class="preview-area" id="previewArea">
+                    <!-- 空状态 -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-glyph">卡</div>
+                        <p>输入文字后点击生成</p>
+                        <p class="empty-sub">卡片比例 3 : 4</p>
+                    </div>
+
+                    <!-- 卡片容器（截图区域） -->
+                    <div id="cardWrapper" class="card-wrapper" style="display:none">
+                        <div id="shareCard" class="share-card theme-snow">
+                            <!-- 背景纹理层 -->
+                            <div class="card-texture"></div>
+                            <!-- 顶部装饰 -->
+                            <div class="card-header-deco">
+                                <span class="corner-mark tl">『</span>
+                                <span class="corner-mark tr">』</span>
+                            </div>
+                            <!-- 内容 -->
+                            <div class="card-body">
+                                <div class="card-title-area" id="cardTitleArea" style="display:none">
+                                    <h3 id="displayTitle"></h3>
+                                    <div class="title-rule"></div>
+                                </div>
+                                
+                                <!-- 社交主题使用 -->
+                                <div class="card-profile-area" id="cardProfileArea" style="display:none">
+                                    <div class="profile-avatar" id="displayProfileAvatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </div>
+                                    <div class="profile-info">
+                                        <div class="profile-name">
+                                            <span id="displayProfileName"></span>
+                                            <span class="profile-badge">👍</span>
+                                        </div>
+                                        <div class="profile-sub" id="displayProfileSub"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-content-area">
+                                    <p id="displayContent"></p>
+                                </div>
+                                <div class="card-author-area" id="cardAuthorArea" style="display:none">
+                                    <span class="author-dash">—</span>
+                                    <span id="displayAuthor"></span>
+                                </div>
+                            </div>
+                            <!-- 底部装饰 -->
+                            <div class="card-footer-deco">
+                                <span class="corner-mark bl">『</span>
+                                <span class="corner-mark br">』</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="preview-actions" id="previewActions" style="display:none">
+                    <div class="preview-btns">
+                        <button class="btn-save" id="saveBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            保存为图片
+                        </button>
+                        <button class="btn-save" id="copyBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            复制图片
+                        </button>
+                    </div>
+                    <span class="save-hint">保存或复制到剪贴板后可直接粘贴分享</span>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>
