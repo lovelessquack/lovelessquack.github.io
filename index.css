@@ -513,8 +513,8 @@ body{
 .x-dot { font-size: 1.1em; line-height: 1; color: #536471; }
 .x-via { color: #536471; }
 
-/* X 卡片内边距调整 */
+/* X 卡片内边距调整 — 底部固定像素，保证时间戳底部间距不变 */
 .theme-x .card-body {
-    padding: 6% 6% 3%;
+    padding: 6% 6% 20px;
 }
 

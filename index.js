@@ -217,7 +217,7 @@ function generateCard() {
 }
 
 // ========================================
-// Smart Layout  (width : height = 0.75)
+// Smart Layout  — 文字少时高度自动收缩，文字多时守 3:4 比例
 // ========================================
 function layoutCard(title, content, author) {
     const card       = document.getElementById('shareCard');
@@ -229,8 +229,6 @@ function layoutCard(title, content, author) {
     const previewW = document.getElementById('previewArea').clientWidth - 16;
 
     const len = content.length;
-    const hasTitle  = !!title;
-    const hasAuthor = !!author;
 
     // ── 基础卡片宽度 ──
     let w;
@@ -241,57 +239,65 @@ function layoutCard(title, content, author) {
     else if (len <= 500) w = 480;
     else                 w = 520;
 
-    // 限制在预览区内
     const maxW = previewW > 0 ? previewW : 360;
     if (w > maxW) w = maxW;
 
-    // ── 动态计算极佳字号 ──
-    // 依据可用面积公式自动推算最佳填充字号，然后用自适应函数微调
+    // ── 正文字号：固定正常范围 ──
     let estimatedCfs = Math.floor(w * Math.sqrt(0.45 / (len || 1)));
-    let cFs = Math.min(Math.max(estimatedCfs, 13), 36); // 控制范围在 13px - 36px 内
-    let tFs = Math.max(16, Math.floor(cFs * 1.15));     // 标题总是比正文大一圈
+    let cFs = Math.min(Math.max(estimatedCfs, 13), 15);
+    let tFs = Math.min(Math.max(15, Math.floor(cFs * 1.15)), 18);
 
-    let h = Math.round(w / 0.75);
+    const ratioH = Math.round(w / 0.75); // 3:4 比例高度（上限）
 
-    // 应用初始尺寸 + 字号
+    // ── 先用 auto 高度，让内容自然撑开 ──
     card.style.width  = w + 'px';
-    card.style.height = h + 'px';
+    card.style.height = 'auto';
     titleEl.style.fontSize   = tFs + 'px';
     contentEl.style.fontSize = cFs + 'px';
 
-    // ── 等布局稳定后检测溢出 ──
+    // ── 布局稳定后，判断是否需要宽高比约束 ──
     requestAnimationFrame(() => {
-        fitContent(card, bodyEl, titleEl, contentEl, w, tFs, cFs);
+        const naturalH = bodyEl.scrollHeight;
+
+        if (naturalH <= ratioH) {
+            // 内容较少：高度自然收缩，不强制 3:4
+            card.style.height = 'auto';
+            if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
+        } else {
+            // 内容较多：启用 3:4 宽高比约束 + 缩字逻辑
+            card.style.height = ratioH + 'px';
+            requestAnimationFrame(() => {
+                fitContent(card, bodyEl, titleEl, contentEl, w, tFs, cFs);
+            });
+        }
     });
 }
 
-// ── 自适应溢出 ──
+// ── 自适应溢出（仅文字多时触发）──
 function fitContent(card, body, titleEl, contentEl, w, tFs, cFs) {
-    const MAX_ROUNDS = 60; // 增加调整迭代次数
+    const MAX_ROUNDS = 60;
     for (let i = 0; i < MAX_ROUNDS; i++) {
         if (body.scrollHeight <= card.clientHeight) {
             if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
-            return;      // 已经完美容纳，无溢出
+            return; // 已完美容纳
         }
 
-        // 优先将超大正文字号逐步缩小
+        // 优先缩小正文字号
         if (cFs > 13) {
             cFs--;
             contentEl.style.fontSize = cFs + 'px';
             continue;
         }
-        // 接着缩小标题
+        // 再缩小标题
         if (tFs > 15) {
             tFs--;
             titleEl.style.fontSize = tFs + 'px';
             continue;
         }
-        // 若到达下限仍无法容纳，则扩大卡片尺寸保障排版
+        // 到达字号下限时，扩大卡片宽高保障排版
         w += 20;
         card.style.width  = w + 'px';
         card.style.height = Math.round(w / 0.75) + 'px';
-        
-        // 卡片变大后，稍微恢复一点字号以重新平衡
         cFs += 1;
         contentEl.style.fontSize = cFs + 'px';
     }
