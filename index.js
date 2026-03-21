@@ -6,12 +6,13 @@
  */
 
 // ── State ──
-let currentStyle = 'social';
+let currentStyle = 'x';
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
     loadRandomAvatar();
+    loadXAvatar();
     // Default show card
     setTimeout(() => {
         const ta = document.getElementById('cardContent');
@@ -82,6 +83,22 @@ async function loadRandomAvatar() {
     }
 }
 
+// X 专属头像 — 固定使用 @lovelessquack 的真实头像
+function loadXAvatar() {
+    const xAvatarEl = document.getElementById('displayXAvatar');
+    if (!xAvatarEl) return;
+    const img = document.createElement('img');
+    img.src = 'https://unavatar.io/x/lovelessquack';
+    img.alt = 'lovelessquack avatar';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.display = 'block';
+    img.crossOrigin = 'anonymous';
+    xAvatarEl.innerHTML = '';
+    xAvatarEl.appendChild(img);
+}
+
 // ========================================
 // Generate
 // ========================================
@@ -144,30 +161,54 @@ function generateCard() {
         }
     });
 
-    // ── 署名 / 社交Profile ──
-    const authorArea = document.getElementById('cardAuthorArea');
-    const profileArea = document.getElementById('cardProfileArea');
-    
-    if (author) {
-        authorArea.style.display = ''; // Let CSS manage visibility
-        document.getElementById('displayAuthor').textContent = author;
-        
-        if (profileArea) {
-            profileArea.style.display = '';
-            document.getElementById('displayProfileName').textContent = author;
-        }
-    } else {
-        authorArea.style.display = 'none';
-        if (profileArea) profileArea.style.display = 'none';
-    }
+    // ── 署名 / 社交Profile / X Profile ──
+    const authorArea   = document.getElementById('cardAuthorArea');
+    const profileArea  = document.getElementById('cardProfileArea');
+    const xHeader      = document.getElementById('cardXHeader');
+    const xFooter      = document.getElementById('xFooter');
 
-    if (profileArea) {
-        const subEl = document.getElementById('displayProfileSub');
-        if (subtitle) {
-            subEl.textContent = subtitle;
-            subEl.style.display = 'block';
+    if (currentStyle === 'x') {
+        // — X 模式：展示 X专属头部，隐藏其他
+        if (author) {
+            xHeader.style.display = '';
+            document.getElementById('displayXName').textContent  = author;
+            document.getElementById('displayXHandle').textContent = '@lovelessquack';
         } else {
-            subEl.style.display = 'none';
+            xHeader.style.display = 'none';
+        }
+        // 时间戳
+        xFooter.style.display = '';
+        if (document.getElementById('displayXTime')) {
+            document.getElementById('displayXTime').textContent = formatXTime();
+        }
+        // 隐藏无关元素
+        authorArea.style.display  = 'none';
+        if (profileArea) profileArea.style.display = 'none';
+    } else {
+        // — 非 X 模式：正常处理
+        if (xHeader) xHeader.style.display = 'none';
+        if (xFooter) xFooter.style.display = 'none';
+
+        if (author) {
+            authorArea.style.display = '';
+            document.getElementById('displayAuthor').textContent = author;
+            if (profileArea) {
+                profileArea.style.display = '';
+                document.getElementById('displayProfileName').textContent = author;
+            }
+        } else {
+            authorArea.style.display = 'none';
+            if (profileArea) profileArea.style.display = 'none';
+        }
+
+        if (profileArea) {
+            const subEl = document.getElementById('displayProfileSub');
+            if (subtitle) {
+                subEl.textContent = subtitle;
+                subEl.style.display = 'block';
+            } else {
+                subEl.style.display = 'none';
+            }
         }
     }
 
@@ -425,6 +466,22 @@ function copyCard() {
         console.error(err);
         toast('复制渲染失败', 'error');
     });
+}
+
+// ========================================
+// ========================================
+// X Time Formatter
+// ========================================
+function formatXTime() {
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMinutes().toString().padStart(2, '0');
+    const ampm = h >= 12 ? '\u4e0b\u5348' : '\u4e0a\u5348';
+    const hour12 = h % 12 || 12;
+    const year  = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const day   = now.getDate();
+    return `${ampm} ${hour12}:${m} \u00b7 ${year}\u5e74${month}\u6708${day}\u65e5`;
 }
 
 // ========================================

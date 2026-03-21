@@ -99,7 +99,7 @@ body{
 .char-count{text-align:right;font-size:.72rem;color:var(--text3);margin-top:5px}
 
 /* ---------- Style Selector ---------- */
-.style-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.style-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 .style-card{
     display:flex;flex-direction:column;align-items:center;gap:5px;
     padding:7px;background:transparent;border:2px solid var(--border);
@@ -381,3 +381,140 @@ body{
     .app-header h1{font-size:1.45rem}
     .input-panel,.preview-panel{padding:18px}
 }
+
+/* =============================================
+   X (Twitter) Theme
+   ============================================= */
+
+/* 整体卡片布局 */
+.theme-x {
+    background: #ffffff;
+    color: #0f1419;
+    border: 1px solid #e7e7e7;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    border-radius: 16px !important;
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
+}
+.theme-x .card-texture { opacity: 0; }
+.theme-x .card-header-deco, .theme-x .card-footer-deco { display: none; }
+.theme-x .title-rule { display: none; }
+.theme-x .card-title-area { display: none !important; }
+.theme-x .card-profile-area { display: none !important; }
+.theme-x .card-author-area { display: none !important; }
+
+/* X Header 区域 */
+.card-x-header { display: none; }
+.theme-x .card-x-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    position: relative;
+}
+
+/* X 头像 */
+.x-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #e8e8f0, #d0d0e0);
+    display: flex; align-items: center; justify-content: center;
+}
+.x-avatar svg { width: 100%; height: 100%; }
+
+/* X 用户信息 */
+.x-user-info {
+    display: flex; flex-direction: column; gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* 认证行：名称 + 蓝标 */
+.x-name-row {
+    display: flex; align-items: center; gap: 5px;
+    flex-wrap: wrap;
+}
+.x-display-name {
+    font-size: 0.97em;
+    font-weight: 700;
+    color: #0f1419;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* X 认证蓝标 */
+.x-verified-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px;
+    flex-shrink: 0;
+}
+.x-verified-badge svg {
+    width: 20px; height: 20px;
+    fill: #1d9bf0;
+}
+
+/* @手柄 */
+.x-handle {
+    font-size: 0.82em;
+    color: #536471;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* X Logo 右上角 */
+.x-logo {
+    margin-left: auto;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+.x-logo svg {
+    width: 22px; height: 22px;
+    fill: #000000;
+    display: block;
+}
+
+/* X 正文内容 */
+.theme-x .card-content-area {
+    margin-top: 0;
+}
+.theme-x .card-content-area p {
+    font-size: 1.1em;
+    line-height: 1.75;
+    color: #0f1419;
+    letter-spacing: 0.01em;
+    word-break: break-word;
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
+}
+.theme-x .card-content-area span {
+    text-decoration: none;
+    border-bottom: none;
+    padding-bottom: 0;
+    letter-spacing: 0.01em;
+}
+.theme-x .card-content-area .empty-line {
+    height: 0.75em;
+}
+
+/* X 底部时间戳 */
+.x-footer { display: none; }
+.theme-x .x-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #eff3f4;
+    font-size: 0.78em;
+    color: #536471;
+}
+.x-dot { font-size: 1.1em; line-height: 1; color: #536471; }
+.x-via { color: #536471; }
+
+/* X 卡片内边距调整 */
+.theme-x .card-body {
+    padding: 6% 6% 3%;
+}
+
