@@ -467,10 +467,10 @@ function drawTextUnderlines() {
         const x2 = lineData.right - parentRect.left;
         
         // MidY is the invariant visual center of the text bounding box.
-        // Adding ~0.55 times font size places the underline perfectly beneath the text,
+        // Adding ~0.70 times font size places the underline with a slight, comfortable gap beneath the text,
         // ignoring any irregular descenders or line-height bounding box inflation. 
         // This makes it immune to empty line height shifting offsets.
-        let y = lineData.midY + cFs * 0.55; 
+        let y = lineData.midY + cFs * 0.70; 
 
         line.setAttribute('x1', x1);
         line.setAttribute('x2', x2);
@@ -518,6 +518,19 @@ function saveCard() {
         backgroundColor: null,
         allowTaint: true,
         useCORS: true,
+        onclone: (clonedDoc) => {
+            const lines = clonedDoc.querySelectorAll('#textUnderlinesSvg line');
+            const contentEl = clonedDoc.getElementById('displayContent');
+            if (contentEl && lines.length > 0) {
+                const cFs = parseFloat(window.getComputedStyle(contentEl).fontSize) || 15;
+                // Shift down ~0.15em for exported image to natively fight html2canvas's own text baseline drop
+                lines.forEach(l => {
+                    const y = parseFloat(l.getAttribute('y1'));
+                    l.setAttribute('y1', y + cFs * 0.15);
+                    l.setAttribute('y2', y + cFs * 0.15);
+                });
+            }
+        }
     }).then(canvas => {
         if (texture) texture.style.opacity = '';
         overlay.remove();
@@ -572,6 +585,19 @@ function copyCard() {
         backgroundColor: null,
         allowTaint: true,
         useCORS: true,
+        onclone: (clonedDoc) => {
+            const lines = clonedDoc.querySelectorAll('#textUnderlinesSvg line');
+            const contentEl = clonedDoc.getElementById('displayContent');
+            if (contentEl && lines.length > 0) {
+                const cFs = parseFloat(window.getComputedStyle(contentEl).fontSize) || 15;
+                // Shift down ~0.15em
+                lines.forEach(l => {
+                    const y = parseFloat(l.getAttribute('y1'));
+                    l.setAttribute('y1', y + cFs * 0.15);
+                    l.setAttribute('y2', y + cFs * 0.15);
+                });
+            }
+        }
     }).then(canvas => {
         if (texture) texture.style.opacity = '';
         canvas.toBlob(blob => {
