@@ -245,7 +245,11 @@ function layoutCard(title, content, author) {
     // ── 正文字号：固定正常范围 ──
     let estimatedCfs = Math.floor(w * Math.sqrt(0.45 / (len || 1)));
     let cFs = Math.min(Math.max(estimatedCfs, 13), 15);
-    let tFs = Math.min(Math.max(15, Math.floor(cFs * 1.15)), 18);
+    
+    // Social mode gets a much larger title natively (max 32px) versus other modes (max 18px)
+    let tFsMulti = currentStyle === 'social' ? 2.0 : 1.15;
+    let tFsMax = currentStyle === 'social' ? 32 : 18;
+    let tFs = Math.min(Math.max(15, Math.floor(cFs * tFsMulti)), tFsMax);
 
     const ratioH = Math.round(w / 0.75); // 3:4 比例高度（上限）
 
