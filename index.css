@@ -275,7 +275,7 @@ body{
 .theme-social .card-texture { opacity: 0; }
 
 .card-profile-area { display: none; }
-.theme-social .card-profile-area { display: flex; align-items: center; gap: 14px; text-align: left; order: 2; margin-top: 24px; }
+.theme-social .card-profile-area { display: flex; align-items: center; gap: 14px; text-align: left; order: 2; margin-top: 18px; }
 .theme-social .card-author-area { display: none !important; }
 
 .profile-avatar {
@@ -296,7 +296,7 @@ body{
 }
 .profile-sub { font-size: 0.75em; color: #999; }
 
-.theme-social .card-content-area { order: 3; margin-top: 24px; }
+.theme-social .card-content-area { order: 3; margin-top: 8px; }
 .theme-social .card-content-area p { 
     text-align: left; 
     line-height: 2.2;
@@ -305,10 +305,9 @@ body{
 .theme-social .card-content-area span {
     text-decoration: none;
     letter-spacing: 0.03em;
-    border-bottom: 1.5px dashed rgba(0, 0, 0, 0.25);
-    padding-bottom: 3px;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
+    padding-bottom: 2px;
+    position: relative;
+    z-index: 1;
 }
 .theme-social .card-content-area .empty-line {
     height: 0.8em;

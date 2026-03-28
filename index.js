@@ -254,6 +254,8 @@ function layoutCard(title, content, author) {
     card.style.height = 'auto';
     titleEl.style.fontSize   = tFs + 'px';
     contentEl.style.fontSize = cFs + 'px';
+    contentEl.style.lineHeight = Math.round(cFs * 2.2) + 'px';
+    contentEl.querySelectorAll('.empty-line').forEach(sp => sp.style.height = Math.round(cFs * 0.8) + 'px');
 
     // ── 布局稳定后，判断是否需要宽高比约束 ──
     requestAnimationFrame(() => {
@@ -263,6 +265,7 @@ function layoutCard(title, content, author) {
             // 内容较少：高度自然收缩，不强制 3:4
             card.style.height = 'auto';
             if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
+            if (typeof drawTextUnderlines === 'function') drawTextUnderlines();
         } else {
             // 内容较多：启用 3:4 宽高比约束 + 缩字逻辑
             card.style.height = ratioH + 'px';
@@ -279,6 +282,7 @@ function fitContent(card, body, titleEl, contentEl, w, tFs, cFs) {
     for (let i = 0; i < MAX_ROUNDS; i++) {
         if (body.scrollHeight <= card.clientHeight) {
             if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
+            if (typeof drawTextUnderlines === 'function') drawTextUnderlines();
             return; // 已完美容纳
         }
 
@@ -286,6 +290,8 @@ function fitContent(card, body, titleEl, contentEl, w, tFs, cFs) {
         if (cFs > 13) {
             cFs--;
             contentEl.style.fontSize = cFs + 'px';
+            contentEl.style.lineHeight = Math.round(cFs * 2.2) + 'px';
+            contentEl.querySelectorAll('.empty-line').forEach(sp => sp.style.height = Math.round(cFs * 0.8) + 'px');
             continue;
         }
         // 再缩小标题
@@ -300,8 +306,11 @@ function fitContent(card, body, titleEl, contentEl, w, tFs, cFs) {
         card.style.height = Math.round(w / 0.75) + 'px';
         cFs += 1;
         contentEl.style.fontSize = cFs + 'px';
+        contentEl.style.lineHeight = Math.round(cFs * 2.2) + 'px';
+        contentEl.querySelectorAll('.empty-line').forEach(sp => sp.style.height = Math.round(cFs * 0.8) + 'px');
     }
     if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
+    if (typeof drawTextUnderlines === 'function') drawTextUnderlines();
 }
 
 // ── 标题高亮笔触效果 ──
@@ -368,6 +377,119 @@ function drawTitleHighlight() {
 }
 
 // ── 标题高亮笔触效果 ──
+
+// ── 正文社交模式虚线绘制 ──
+function drawTextUnderlines() {
+    const contentArea = document.getElementById('displayContent');
+    if (!contentArea) return;
+    
+    const oldSvg = document.getElementById('textUnderlinesSvg');
+    if (oldSvg) oldSvg.remove();
+
+    if (currentStyle !== 'social') return;
+
+    // Temporarily halt animations and transforms to get unscaled CSS pixel measurements
+    const wrapper = document.getElementById('cardWrapper');
+    const oldAnim = wrapper.style.animation;
+    const oldTrans = wrapper.style.transform;
+    wrapper.style.animation = 'none';
+    wrapper.style.transform = 'none';
+    void wrapper.offsetHeight; // force reflow
+
+    contentArea.style.position = 'relative';
+
+    const svgNs = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNs, 'svg');
+    svg.setAttribute('id', 'textUnderlinesSvg');
+    svg.setAttribute('xmlns', svgNs);
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '0';
+
+    const computedStyle = window.getComputedStyle(contentArea);
+    const cFs = parseFloat(computedStyle.fontSize) || 15;
+
+    const parentRect = contentArea.getBoundingClientRect();
+    
+    // Crucial: explicit SVG pixel dimension bounds to force html2canvas rasterization matches CSS 1:1
+    svg.setAttribute('width', parentRect.width);
+    svg.setAttribute('height', parentRect.height);
+    svg.setAttribute('viewBox', `0 0 ${parentRect.width} ${parentRect.height}`);
+
+    const spans = contentArea.querySelectorAll('span');
+
+    let visualLines = [];
+
+    spans.forEach(span => {
+        const rects = span.getClientRects();
+        for (let i = 0; i < rects.length; i++) {
+            const r = rects[i];
+            if (r.width === 0 || r.height === 0) continue;
+            
+            const relativeTop = r.top - parentRect.top;
+            const midY = relativeTop + r.height / 2;
+
+            let placed = false;
+            for (let j = 0; j < visualLines.length; j++) {
+                const vLine = visualLines[j];
+                // Group rects on the same line (midY within 0.6em)
+                if (Math.abs(vLine.midY - midY) < cFs * 0.6) {
+                    vLine.left = Math.min(vLine.left, r.left);
+                    vLine.right = Math.max(vLine.right, r.right);
+                    // Update rolling average for midY
+                    vLine.midY = (vLine.midY * vLine.count + midY) / (vLine.count + 1);
+                    vLine.count++;
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                visualLines.push({
+                    midY: midY,
+                    left: r.left,
+                    right: r.right,
+                    count: 1
+                });
+            }
+        }
+    });
+
+    visualLines.forEach(lineData => {
+        // Only draw lines if we have width
+        if (lineData.right <= lineData.left) return;
+        
+        const line = document.createElementNS(svgNs, 'line');
+        const x1 = lineData.left - parentRect.left;
+        const x2 = lineData.right - parentRect.left;
+        
+        // MidY is the invariant visual center of the text bounding box.
+        // Adding ~0.55 times font size places the underline perfectly beneath the text,
+        // ignoring any irregular descenders or line-height bounding box inflation. 
+        // This makes it immune to empty line height shifting offsets.
+        let y = lineData.midY + cFs * 0.55; 
+
+        line.setAttribute('x1', x1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', 'rgba(0,0,0,0.28)');
+        line.setAttribute('stroke-width', '1.5');
+        line.setAttribute('stroke-dasharray', '8,4');
+        line.setAttribute('stroke-linecap', 'square');
+        
+        svg.appendChild(line);
+    });
+
+    contentArea.insertBefore(svg, contentArea.firstChild);
+
+    // Restore transforms
+    wrapper.style.animation = oldAnim;
+    wrapper.style.transform = oldTrans;
+}
 
 // ========================================
 // Save Card as PNG (html2canvas)
