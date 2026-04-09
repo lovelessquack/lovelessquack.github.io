@@ -460,7 +460,7 @@ body{
 
 /* X 头像 */
 .x-avatar {
-    width: 48px; height: 48px;
+    width: 34px; height: 34px;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;

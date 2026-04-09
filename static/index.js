@@ -172,7 +172,6 @@ function generateCard() {
         if (author) {
             xHeader.style.display = '';
             document.getElementById('displayXName').textContent  = author;
-            document.getElementById('displayXHandle').textContent = '@lovelessquack';
         } else {
             xHeader.style.display = 'none';
         }
