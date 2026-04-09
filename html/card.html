@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="文字分享卡片生成器 - 生成精美的文字分享图">
+    <title>文字分享卡片生成器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=ZCOOL+KuaiLe&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="../static/index.css">
+</head>
+<body>
+    <!-- Top Nav -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <a href="../index.html" class="nav-item">首页</a>
+            <a href="card.html" class="nav-item active">文字卡片</a>
+            <a href="chat.html" class="nav-item">聊天记录</a>
+        </div>
+    </nav>
+
+    <!-- Background -->
+    <div class="bg-ornament bg-ornament-1"></div>
+    <div class="bg-ornament bg-ornament-2"></div>
+
+    <div class="app-container">
+        <main class="main-content">
+            <!-- ====== 左：输入区 ====== -->
+            <section class="input-panel">
+                <h2 class="section-title">
+                    <span class="section-icon">✎</span>
+                    编辑内容
+                </h2>
+
+                <div class="form-group">
+                    <label for="cardTitle" class="form-label">标题 <span class="tag tag-optional">选填</span></label>
+                    <input type="text" id="cardTitle" class="form-input" placeholder="给卡片起个标题..." maxlength="30">
+                </div>
+
+                <div class="form-group">
+                    <label for="cardContent" class="form-label">正文 <span class="tag tag-required">必填</span></label>
+                    <textarea id="cardContent" class="form-textarea" placeholder="在这里写下你想分享的文字..." rows="8"></textarea>
+                    <div class="char-count" id="charCount">0 字</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cardAuthor" class="form-label">署名 <span class="tag tag-optional">选填</span></label>
+                    <input type="text" id="cardAuthor" class="form-input" placeholder="作者、出处或昵称..." maxlength="20" value="一只甜薯">
+                </div>
+
+                <div class="form-group">
+                    <label for="cardSubtitle" class="form-label">签名/简介 <span class="tag tag-optional">限定社交样式可见</span></label>
+                    <input type="text" id="cardSubtitle" class="form-input" placeholder="用于社交样式的简介..." maxlength="30" value="让好奇心永远在线">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">卡片风格</label>
+                    <div class="style-grid" id="styleSelector">
+                        <button class="style-card active" data-style="social">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#1b1b20,#2a2a32)"></div>
+                            <span>社交</span>
+                        </button>
+                        <button class="style-card" data-style="x">
+                            <div class="style-swatch" style="background:#fff;border:1px solid #e5e5e5;display:flex;align-items:center;justify-content:center">
+                                <svg viewBox="0 0 24 24" style="width:50%;height:50%;fill:#000"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            </div>
+                            <span>X</span>
+                        </button>
+                        <button class="style-card" data-style="snow">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#fff,#eef1f5);border:1px solid #ddd"></div>
+                            <span>霜雪</span>
+                        </button>
+                        <button class="style-card" data-style="ink">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#1a1a2e,#16213e)"></div>
+                            <span>水墨</span>
+                        </button>
+                        <button class="style-card" data-style="paper">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#fef9ef,#f5e6ca)"></div>
+                            <span>宣纸</span>
+                        </button>
+                        <button class="style-card" data-style="night">
+                            <div class="style-swatch" style="background:linear-gradient(135deg,#0f0c29,#302b63)"></div>
+                            <span>星夜</span>
+                        </button>
+
+                    </div>
+                </div>
+
+                <button class="btn-generate" id="generateBtn">
+                    <span class="btn-spark">⚡</span>
+                    生成卡片
+                </button>
+            </section>
+
+            <!-- ====== 右：预览区 ====== -->
+            <section class="preview-panel">
+                <h2 class="section-title">
+                    <span class="section-icon">☷</span>
+                    卡片预览
+                </h2>
+
+                <div class="preview-area" id="previewArea">
+                    <!-- 空状态 -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-glyph">卡</div>
+                        <p>输入文字后点击生成</p>
+                        <p class="empty-sub">卡片比例 3 : 4</p>
+                    </div>
+
+                    <!-- 卡片容器（截图区域） -->
+                    <div id="cardWrapper" class="card-wrapper" style="display:none">
+                        <div id="shareCard" class="share-card theme-social">
+                            <!-- 背景纹理层 -->
+                            <div class="card-texture"></div>
+                            <!-- 顶部装饰 -->
+                            <div class="card-header-deco">
+                                <span class="corner-mark tl">『</span>
+                                <span class="corner-mark tr">』</span>
+                            </div>
+                            <!-- 内容 -->
+                            <div class="card-body">
+                                <div class="card-title-area" id="cardTitleArea" style="display:none">
+                                    <h3 id="displayTitle"></h3>
+                                    <div class="title-rule"></div>
+                                </div>
+                                
+                                <!-- 社交主题使用 -->
+                                <div class="card-profile-area" id="cardProfileArea" style="display:none">
+                                    <div class="profile-avatar" id="displayProfileAvatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </div>
+                                    <div class="profile-info">
+                                        <div class="profile-name">
+                                            <span id="displayProfileName"></span>
+                                            <span class="profile-badge">👍</span>
+                                        </div>
+                                        <div class="profile-sub" id="displayProfileSub"></div>
+                                    </div>
+                                </div>
+
+                                <!-- X 主题专属 Header -->
+                                <div class="card-x-header" id="cardXHeader" style="display:none">
+                                    <div class="x-avatar" id="displayXAvatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </div>
+                                    <div class="x-user-info">
+                                        <div class="x-name-row">
+                                            <span class="x-display-name" id="displayXName"></span>
+                                            <span class="x-verified-badge" title="已认证">
+                                                <svg viewBox="0 0 24 24" aria-label="已认证账号">
+                                                    <g>
+                                                        <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"/>
+                                                    </g>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="x-handle" id="displayXHandle">@lovelessquack</div>
+                                    </div>
+                                    <div class="x-logo">
+                                        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-content-area">
+                                    <p id="displayContent"></p>
+                                </div>
+                                <div class="card-author-area" id="cardAuthorArea" style="display:none">
+                                    <span class="author-dash">—</span>
+                                    <span id="displayAuthor"></span>
+                                </div>
+
+                                <!-- X 底部时间戳 -->
+                                <div class="x-footer" id="xFooter" style="display:none">
+                                    <span class="x-timestamp" id="displayXTime"></span>
+                                    <span class="x-dot">·</span>
+                                    <span class="x-via">X (Twitter)</span>
+                                </div>
+                            </div>
+                            <!-- 底部装饰 -->
+                            <div class="card-footer-deco">
+                                <span class="corner-mark bl">『</span>
+                                <span class="corner-mark br">』</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="preview-actions" id="previewActions" style="display:none">
+                    <div class="preview-btns">
+                        <button class="btn-save" id="saveBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            保存为图片
+                        </button>
+                        <button class="btn-save" id="copyBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            复制图片
+                        </button>
+                    </div>
+                    <span class="save-hint">保存或复制到剪贴板后可直接粘贴分享</span>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../static/index.js"></script>
+</body>
+</html>

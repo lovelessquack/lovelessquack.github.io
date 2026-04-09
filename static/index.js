@@ -6,7 +6,7 @@
  */
 
 // ── State ──
-let currentStyle = 'x';
+let currentStyle = 'social';
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
