@@ -250,7 +250,6 @@ function layoutCard(title, content, author) {
     let tFsMax = currentStyle === 'social' ? 32 : 18;
     let tFs = Math.min(Math.max(15, Math.floor(cFs * tFsMulti)), tFsMax);
 
-    const baseH = Math.round(w / 0.75); // 3:4 比例作为基础高度
 
     // ── 先用 auto 高度，让内容自然撑开 ──
     card.style.width  = w + 'px';
@@ -264,7 +263,7 @@ function layoutCard(title, content, author) {
     requestAnimationFrame(() => {
         const naturalH = bodyEl.scrollHeight;
 
-        card.style.height = Math.max(baseH, naturalH) + 'px';
+        card.style.height = naturalH + 'px';
         if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
         if (typeof drawTextUnderlines === 'function') drawTextUnderlines();
     });
