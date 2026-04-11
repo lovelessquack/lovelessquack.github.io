@@ -250,7 +250,7 @@ function layoutCard(title, content, author) {
     let tFsMax = currentStyle === 'social' ? 32 : 18;
     let tFs = Math.min(Math.max(15, Math.floor(cFs * tFsMulti)), tFsMax);
 
-    const ratioH = Math.round(w / 0.75); // 3:4 比例高度（上限）
+    const baseH = Math.round(w / 0.75); // 3:4 比例作为基础高度
 
     // ── 先用 auto 高度，让内容自然撑开 ──
     card.style.width  = w + 'px';
@@ -264,58 +264,13 @@ function layoutCard(title, content, author) {
     requestAnimationFrame(() => {
         const naturalH = bodyEl.scrollHeight;
 
-        if (naturalH <= ratioH) {
-            // 内容较少：高度自然收缩，不强制 3:4
-            card.style.height = 'auto';
-            if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
-            if (typeof drawTextUnderlines === 'function') drawTextUnderlines();
-        } else {
-            // 内容较多：启用 3:4 宽高比约束 + 缩字逻辑
-            card.style.height = ratioH + 'px';
-            requestAnimationFrame(() => {
-                fitContent(card, bodyEl, titleEl, contentEl, w, tFs, cFs);
-            });
-        }
+        card.style.height = Math.max(baseH, naturalH) + 'px';
+        if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
+        if (typeof drawTextUnderlines === 'function') drawTextUnderlines();
     });
 }
 
 // ── 自适应溢出（仅文字多时触发）──
-function fitContent(card, body, titleEl, contentEl, w, tFs, cFs) {
-    const MAX_ROUNDS = 60;
-    for (let i = 0; i < MAX_ROUNDS; i++) {
-        if (body.scrollHeight <= card.clientHeight) {
-            if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
-            if (typeof drawTextUnderlines === 'function') drawTextUnderlines();
-            return; // 已完美容纳
-        }
-
-        // 优先缩小正文字号
-        if (cFs > 13) {
-            cFs--;
-            contentEl.style.fontSize = cFs + 'px';
-            contentEl.style.lineHeight = Math.round(cFs * 2.2) + 'px';
-            contentEl.querySelectorAll('.empty-line').forEach(sp => sp.style.height = Math.round(cFs * 0.8) + 'px');
-            continue;
-        }
-        // 再缩小标题
-        if (tFs > 15) {
-            tFs--;
-            titleEl.style.fontSize = tFs + 'px';
-            continue;
-        }
-        // 到达字号下限时，扩大卡片宽高保障排版
-        w += 20;
-        card.style.width  = w + 'px';
-        card.style.height = Math.round(w / 0.75) + 'px';
-        cFs += 1;
-        contentEl.style.fontSize = cFs + 'px';
-        contentEl.style.lineHeight = Math.round(cFs * 2.2) + 'px';
-        contentEl.querySelectorAll('.empty-line').forEach(sp => sp.style.height = Math.round(cFs * 0.8) + 'px');
-    }
-    if (typeof drawTitleHighlight === 'function') drawTitleHighlight();
-    if (typeof drawTextUnderlines === 'function') drawTextUnderlines();
-}
-
 // ── 标题高亮笔触效果 ──
 function drawTitleHighlight() {
     const titleArea = document.getElementById('cardTitleArea');
