@@ -360,6 +360,77 @@ body{
     height: 0.8em;
 }
 
+/* -- notes (iPhone 备忘录) -- */
+.theme-notes {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.42) 0, rgba(255,255,255,0.42) 1px, transparent 1px, transparent 44px),
+        linear-gradient(90deg, transparent 0, transparent 24px, rgba(233, 193, 64, 0.55) 24px, rgba(233, 193, 64, 0.55) 26px, transparent 26px),
+        linear-gradient(180deg, #fffde8 0%, #fff8cf 100%);
+    background-size: 100% 44px, 100% 100%, 100% 100%;
+    color: #2e2a1f;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(77, 63, 18, 0.18);
+}
+.theme-notes .card-texture,
+.theme-notes .card-header-deco,
+.theme-notes .card-footer-deco,
+.theme-notes .card-author-area,
+.theme-notes .card-x-header,
+.theme-notes .x-footer,
+.theme-notes .card-title-area {
+    display: none !important;
+}
+.theme-notes .card-body {
+    padding: 30px 26px 26px 38px;
+}
+.theme-notes .card-profile-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    order: 1;
+    margin-top: 0;
+    margin-bottom: 14px;
+}
+.theme-notes .profile-avatar {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(84, 69, 19, 0.08);
+    box-shadow: 0 2px 8px rgba(84, 69, 19, 0.08);
+}
+.theme-notes .profile-name {
+    color: #3b3424;
+    font-size: 0.95em;
+}
+.theme-notes .profile-sub {
+    color: #8b7f5a;
+    font-size: 0.76em;
+}
+.theme-notes .profile-badge {
+    display: none;
+}
+.theme-notes .card-content-area {
+    order: 2;
+    margin-top: 0;
+}
+.theme-notes .card-content-area p {
+    font-family: "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #2e2a1f;
+    line-height: 2.15;
+    letter-spacing: 0.01em;
+}
+.theme-notes .card-content-area .note-title {
+    display: block;
+    margin: 0 0 14px;
+    font-size: 1.7em;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #141414;
+    letter-spacing: -0.02em;
+}
+.theme-notes .card-content-area .empty-line {
+    height: 0.9em;
+}
+
 /* =============================================
    Preview Actions
    ============================================= */

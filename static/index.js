@@ -128,7 +128,7 @@ function generateCard() {
 
     // ── 标题 ──
     const titleArea = document.getElementById('cardTitleArea');
-    if (title) {
+    if (title && currentStyle !== 'notes') {
         titleArea.style.display = 'block';
         const h3 = document.getElementById('displayTitle');
         h3.innerHTML = '';
@@ -145,6 +145,12 @@ function generateCard() {
     // ── 正文（空行缩短处理）──
     const contentArea = document.getElementById('displayContent');
     contentArea.innerHTML = '';
+    if (currentStyle === 'notes' && title) {
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'note-title';
+        titleSpan.textContent = title;
+        contentArea.appendChild(titleSpan);
+    }
     const lines = content.split('\n');
     lines.forEach((line, i) => {
         if (line.trim() === '') {
@@ -183,6 +189,26 @@ function generateCard() {
         // 隐藏无关元素
         authorArea.style.display  = 'none';
         if (profileArea) profileArea.style.display = 'none';
+    } else if (currentStyle === 'notes') {
+        if (xHeader) xHeader.style.display = 'none';
+        if (xFooter) xFooter.style.display = 'none';
+        authorArea.style.display = 'none';
+        if (profileArea) {
+            if (author) {
+                profileArea.style.display = '';
+                document.getElementById('displayProfileName').textContent = author;
+            } else {
+                profileArea.style.display = 'none';
+            }
+
+            const subEl = document.getElementById('displayProfileSub');
+            if (subtitle) {
+                subEl.textContent = subtitle;
+                subEl.style.display = 'block';
+            } else {
+                subEl.style.display = 'none';
+            }
+        }
     } else {
         // — 非 X 模式：正常处理
         if (xHeader) xHeader.style.display = 'none';
