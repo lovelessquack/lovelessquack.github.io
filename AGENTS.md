@@ -24,3 +24,17 @@ Recent history uses very short subjects such as `调整架构`, `11`, and `1`. K
 
 ## Security & Configuration Tips
 This site depends on third-party runtime resources such as Google Fonts, CDNJS `html2canvas`, DiceBear, and Unavatar. Do not add secrets to the repo. Treat new external URLs carefully and verify CORS-sensitive features after any dependency change.
+
+## Init Snapshot
+Initialization was completed on 2026-04-14. The current repository layout matches the guidance above: root `index.html`, feature pages in `html/`, and shared assets in `static/`. The git working tree was clean on branch `main` at init time.
+
+Current implementation notes:
+- `html/card.html` is the text share card generator.
+- `html/chat.html` is the chat screenshot generator with a WeChat-style preview.
+- `static/index.js` handles card rendering, theme switching, avatar loading, save/copy via `html2canvas`, and a server-submit action.
+- `static/chat.js` handles chat message composition, avatar setup, and save/copy via `html2canvas`.
+
+Known risks and watchpoints:
+- Several page/source reads showed obvious mojibake, indicating an encoding mismatch risk in existing HTML/JS/CSS content. Be careful when editing Chinese copy until encoding is verified.
+- `static/index.js` currently contains a hard-coded POST target `http://192.168.2.3:9991/api/duanzi` and an `X-API-Key`. Treat that as sensitive configuration and avoid expanding this pattern.
+- Clipboard and export features depend on browser security context and third-party assets, so prefer validating over `http://localhost:8000/` instead of opening files directly.
