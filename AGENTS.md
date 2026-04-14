@@ -1,40 +1,40 @@
-# Repository Guidelines
+﻿# 仓库协作指南
 
-## Project Structure & Module Organization
-This repository is a small static site. The root `index.html` is the landing page. Feature pages live in `html/`: `card.html` for the text card generator and `chat.html` for the chat screenshot generator. Shared frontend assets live in `static/`: `index.css` contains the shared theme and layout styles, `index.js` drives card generation, and `chat.js` handles chat composition and export. There is no build output directory; files are served directly from the repo.
+## 项目结构与模块组织
+这个仓库是一个小型静态站点。根目录的 `index.html` 是落地页。功能页面位于 `html/` 目录：`card.html` 是文字卡片生成器，`chat.html` 是聊天截图生成器。共享前端资源位于 `static/`：`index.css` 包含共享主题和布局样式，`index.js` 负责卡片生成功能，`chat.js` 负责聊天内容编辑与导出。仓库没有构建产物目录，所有文件均直接以静态资源方式提供。
 
-## Build, Test, and Development Commands
-There is no package-based build step or test runner configured.
+## 构建、测试与开发命令
+当前项目没有基于包管理器的构建流程，也没有自动化测试运行器。
 
 - `python -m http.server 8000`
-  Runs a local static server from the repository root.
-- Open `http://localhost:8000/`
-  Use this for normal development and manual QA.
+  在仓库根目录启动本地静态服务器。
+- 打开 `http://localhost:8000/`
+  这是日常开发和手工验收的推荐方式。
 - `start index.html`
-  Quick smoke check for markup and styling, but browser APIs such as clipboard/export behave more reliably over `http://localhost`.
+  可用于快速检查基础结构和样式，但剪贴板、导出等浏览器 API 在 `http://localhost` 下通常更稳定。
 
-## Coding Style & Naming Conventions
-Use 4-space indentation in HTML, CSS, and JavaScript. Keep JavaScript framework-free and prefer plain DOM APIs, matching the existing files in `static/`. Use `camelCase` for variables and functions (`loadRandomAvatar`, `generateCard`), and `kebab-case` for CSS classes and file names (`chat-row-right`, `index.css`). Add shared styling in `static/index.css`; avoid scattering new inline styles unless the change is truly page-specific.
+## 编码风格与命名约定
+HTML、CSS 和 JavaScript 统一使用 4 空格缩进。JavaScript 保持无框架实现，优先使用原生 DOM API，并与 `static/` 下现有代码风格保持一致。变量和函数名使用 `camelCase`，例如 `loadRandomAvatar`、`generateCard`；CSS 类名和文件名使用 `kebab-case`，例如 `chat-row-right`、`index.css`。共享样式应优先放在 `static/index.css`，除非确实是单页专用逻辑，否则不要随意增加内联样式。
 
-## Testing Guidelines
-Manual testing is the current standard. Validate all three entry points: `index.html`, `html/card.html`, and `html/chat.html`. For UI changes, check desktop and mobile widths, theme switching, avatar loading, and the save/copy flows powered by `html2canvas`. If a change touches external resources, confirm the page still works when served locally.
+## 测试说明
+当前以手工测试为准。需要覆盖三个入口页：`index.html`、`html/card.html`、`html/chat.html`。涉及 UI 变更时，至少检查桌面端和移动端宽度、主题切换、头像加载、以及由 `html2canvas` 驱动的保存和复制流程。如果改动涉及外部资源，还需要确认项目在本地静态服务下仍能正常工作。
 
-## Commit & Pull Request Guidelines
-Recent history uses very short subjects such as `调整架构`, `11`, and `1`. Keep commits brief, but make them descriptive and action-oriented, for example `card: fix X layout overflow`. Pull requests should include a short summary, affected pages or assets, manual test notes, and screenshots or GIFs for visible UI changes. Link the related issue when one exists.
+## 提交与 Pull Request 约定
+最近提交记录里存在较短的提交信息，例如 `调整架构`、`11`、`1`。后续提交仍可保持简短，但建议使用更明确、面向动作的描述，例如 `card: fix layout overflow`。Pull Request 应包含简要摘要、受影响页面或资源、手工测试说明，以及界面可见变更的截图或 GIF。如有关联 issue，应一并链接。
 
-## Security & Configuration Tips
-This site depends on third-party runtime resources such as Google Fonts, CDNJS `html2canvas`, DiceBear, and Unavatar. Do not add secrets to the repo. Treat new external URLs carefully and verify CORS-sensitive features after any dependency change.
+## 安全与配置提示
+站点运行依赖第三方资源，例如 Google Fonts、CDNJS 上的 `html2canvas`、DiceBear 和 Unavatar。不要把密钥或其他敏感信息提交到仓库。新增外部 URL 时应谨慎处理，并在每次依赖改动后验证受 CORS 影响的功能是否正常。
 
-## Init Snapshot
-Initialization was completed on 2026-04-14. The current repository layout matches the guidance above: root `index.html`, feature pages in `html/`, and shared assets in `static/`. The git working tree was clean on branch `main` at init time.
+## 初始化快照
+本仓库已于 2026-04-14 完成初始化扫描。当前仓库结构与上述说明一致：根目录为 `index.html`，功能页位于 `html/`，共享资源位于 `static/`。初始化时 `git` 工作区干净，所在分支为 `main`。
 
-Current implementation notes:
-- `html/card.html` is the text share card generator.
-- `html/chat.html` is the chat screenshot generator with a WeChat-style preview.
-- `static/index.js` handles card rendering, theme switching, avatar loading, save/copy via `html2canvas`, and a server-submit action.
-- `static/chat.js` handles chat message composition, avatar setup, and save/copy via `html2canvas`.
+当前实现说明：
+- `html/card.html` 是文字分享卡片生成器。
+- `html/chat.html` 是聊天截图生成器，当前预览风格为微信聊天记录样式。
+- `static/index.js` 负责卡片渲染、主题切换、头像加载、通过 `html2canvas` 保存或复制图片，以及提交到服务端的动作。
+- `static/chat.js` 负责聊天消息编辑、头像初始化，以及通过 `html2canvas` 保存或复制图片。
 
-Known risks and watchpoints:
-- Several page/source reads showed obvious mojibake, indicating an encoding mismatch risk in existing HTML/JS/CSS content. Be careful when editing Chinese copy until encoding is verified.
-- `static/index.js` currently contains a hard-coded POST target `http://192.168.2.3:9991/api/duanzi` and an `X-API-Key`. Treat that as sensitive configuration and avoid expanding this pattern.
-- Clipboard and export features depend on browser security context and third-party assets, so prefer validating over `http://localhost:8000/` instead of opening files directly.
+当前已知风险与注意点：
+- 读取多个页面和脚本时发现明显乱码，说明现有 HTML、JS、CSS 存在编码不一致风险。在没有先确认编码之前，不要直接大规模修改中文文案。
+- `static/index.js` 目前包含硬编码的 POST 地址 `http://192.168.2.3:9991/api/duanzi`，同时还包含 `X-API-Key`。这类配置应视为敏感信息，不应继续扩散这种写法。
+- 剪贴板和导出能力依赖浏览器安全上下文与第三方资源，因此验收时优先使用 `http://localhost:8000/`，不要直接双击本地文件测试。
