@@ -448,6 +448,19 @@ body{
 .btn-save:hover{background:rgba(139,92,246,.18);border-color:rgba(139,92,246,.45);transform:translateY(-1px)}
 .save-hint{display:block;font-size:.72rem;color:var(--text3);margin-top:8px}
 
+/* ---------- Server Save (入库) ---------- */
+.server-actions{margin-top:14px;text-align:center}
+.btn-server-save{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:11px 30px;
+    background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.32);
+    border-radius:var(--r-md);color:#34d399;
+    font-size:.88rem;font-weight:500;font-family:inherit;cursor:pointer;
+    transition:var(--smooth);
+}
+.btn-server-save:hover{background:rgba(52,211,153,.22);border-color:rgba(52,211,153,.5);transform:translateY(-1px)}
+.btn-server-save:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
 /* =============================================
    Toast
    ============================================= */

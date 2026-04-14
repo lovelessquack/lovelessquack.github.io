@@ -52,6 +52,7 @@ function bindEvents() {
     document.getElementById('generateBtn').addEventListener('click', generateCard);
     document.getElementById('saveBtn').addEventListener('click', saveCard);
     document.getElementById('copyBtn').addEventListener('click', copyCard);
+    document.getElementById('saveToServerBtn').addEventListener('click', saveToServer);
 }
 
 // ========================================
@@ -103,9 +104,9 @@ function loadXAvatar() {
 // Generate
 // ========================================
 function generateCard() {
-    const title   = document.getElementById('cardTitle').value.trim();
+    const title = document.getElementById('cardTitle').value.trim();
     const content = document.getElementById('cardContent').value.trim();
-    const author  = document.getElementById('cardAuthor').value.trim();
+    const author = document.getElementById('cardAuthor').value.trim();
     const subtitleField = document.getElementById('cardSubtitle');
     const subtitle = subtitleField ? subtitleField.value.trim() : '';
 
@@ -116,6 +117,7 @@ function generateCard() {
     const wrapper = document.getElementById('cardWrapper');
     wrapper.style.display = 'flex';
     document.getElementById('previewActions').style.display = 'block';
+    document.getElementById('serverActions').style.display = 'block';
 
     // 触发入场动画
     wrapper.style.animation = 'none';
@@ -168,16 +170,16 @@ function generateCard() {
     });
 
     // ── 署名 / 社交Profile / X Profile ──
-    const authorArea   = document.getElementById('cardAuthorArea');
-    const profileArea  = document.getElementById('cardProfileArea');
-    const xHeader      = document.getElementById('cardXHeader');
-    const xFooter      = document.getElementById('xFooter');
+    const authorArea = document.getElementById('cardAuthorArea');
+    const profileArea = document.getElementById('cardProfileArea');
+    const xHeader = document.getElementById('cardXHeader');
+    const xFooter = document.getElementById('xFooter');
 
     if (currentStyle === 'x') {
         // — X 模式：展示 X专属头部，隐藏其他
         if (author) {
             xHeader.style.display = '';
-            document.getElementById('displayXName').textContent  = author;
+            document.getElementById('displayXName').textContent = author;
         } else {
             xHeader.style.display = 'none';
         }
@@ -187,7 +189,7 @@ function generateCard() {
             document.getElementById('displayXTime').textContent = formatXTime();
         }
         // 隐藏无关元素
-        authorArea.style.display  = 'none';
+        authorArea.style.display = 'none';
         if (profileArea) profileArea.style.display = 'none';
     } else if (currentStyle === 'notes') {
         if (xHeader) xHeader.style.display = 'none';
@@ -245,10 +247,10 @@ function generateCard() {
 // Smart Layout  — 文字少时高度自动收缩，文字多时守 3:4 比例
 // ========================================
 function layoutCard(title, content, author) {
-    const card       = document.getElementById('shareCard');
-    const titleEl    = document.getElementById('displayTitle');
-    const contentEl  = document.getElementById('displayContent');
-    const bodyEl     = card.querySelector('.card-body');
+    const card = document.getElementById('shareCard');
+    const titleEl = document.getElementById('displayTitle');
+    const contentEl = document.getElementById('displayContent');
+    const bodyEl = card.querySelector('.card-body');
 
     // 可用宽度上限
     const previewW = document.getElementById('previewArea').clientWidth - 16;
@@ -257,12 +259,12 @@ function layoutCard(title, content, author) {
 
     // ── 基础卡片宽度 ──
     let w;
-    if (len <= 30)       w = 320;
-    else if (len <= 80)  w = 360;
+    if (len <= 30) w = 320;
+    else if (len <= 80) w = 360;
     else if (len <= 150) w = 400;
     else if (len <= 300) w = 440;
     else if (len <= 500) w = 480;
-    else                 w = 520;
+    else w = 520;
 
     const maxW = previewW > 0 ? previewW : 360;
     if (w > maxW) w = maxW;
@@ -270,7 +272,7 @@ function layoutCard(title, content, author) {
     // ── 正文字号：固定正常范围 ──
     let estimatedCfs = Math.floor(w * Math.sqrt(0.45 / (len || 1)));
     let cFs = Math.min(Math.max(estimatedCfs, 13), 15);
-    
+
     // Social mode gets a much larger title natively (max 32px) versus other modes (max 18px)
     let tFsMulti = currentStyle === 'social' ? 2.0 : 1.15;
     let tFsMax = currentStyle === 'social' ? 32 : 18;
@@ -278,9 +280,9 @@ function layoutCard(title, content, author) {
 
 
     // ── 先用 auto 高度，让内容自然撑开 ──
-    card.style.width  = w + 'px';
+    card.style.width = w + 'px';
     card.style.height = 'auto';
-    titleEl.style.fontSize   = tFs + 'px';
+    titleEl.style.fontSize = tFs + 'px';
     contentEl.style.fontSize = cFs + 'px';
     contentEl.style.lineHeight = Math.round(cFs * 2.2) + 'px';
     contentEl.querySelectorAll('.empty-line').forEach(sp => sp.style.height = Math.round(cFs * 0.8) + 'px');
@@ -300,7 +302,7 @@ function layoutCard(title, content, author) {
 function drawTitleHighlight() {
     const titleArea = document.getElementById('cardTitleArea');
     if (!titleArea || titleArea.style.display === 'none') return;
-    
+
     const titleEl = document.getElementById('displayTitle');
     const textSpan = titleEl.querySelector('.highlight-text');
     if (!textSpan) return;
@@ -342,17 +344,17 @@ function drawTitleHighlight() {
         for (let i = 0; i < rects.length; i++) {
             const rect = rects[i];
             if (rect.width === 0 || rect.height === 0) continue;
-            
+
             const hl = document.createElement('div');
             hl.style.position = 'absolute';
             hl.style.left = (rect.left - parentRect.left - 6) + 'px';
-            hl.style.top = (rect.top - parentRect.top + rect.height * 0.55) + 'px'; 
+            hl.style.top = (rect.top - parentRect.top + rect.height * 0.55) + 'px';
             hl.style.width = (rect.width + 12) + 'px';
             hl.style.height = (rect.height * 0.45) + 'px';
             hl.style.backgroundColor = rc;
             hl.style.borderRadius = '6px';
             hl.style.transform = `skew(-12deg) rotate(${Math.random() > 0.5 ? 1 : -1}deg)`;
-            
+
             hlContainer.appendChild(hl);
         }
         titleArea.insertBefore(hlContainer, titleEl);
@@ -365,7 +367,7 @@ function drawTitleHighlight() {
 function drawTextUnderlines() {
     const contentArea = document.getElementById('displayContent');
     if (!contentArea) return;
-    
+
     const oldSvg = document.getElementById('textUnderlinesSvg');
     if (oldSvg) oldSvg.remove();
 
@@ -397,7 +399,7 @@ function drawTextUnderlines() {
     const cFs = parseFloat(computedStyle.fontSize) || 15;
 
     const parentRect = contentArea.getBoundingClientRect();
-    
+
     // Crucial: explicit SVG pixel dimension bounds to force html2canvas rasterization matches CSS 1:1
     svg.setAttribute('width', parentRect.width);
     svg.setAttribute('height', parentRect.height);
@@ -412,7 +414,7 @@ function drawTextUnderlines() {
         for (let i = 0; i < rects.length; i++) {
             const r = rects[i];
             if (r.width === 0 || r.height === 0) continue;
-            
+
             const relativeTop = r.top - parentRect.top;
             const midY = relativeTop + r.height / 2;
 
@@ -444,16 +446,16 @@ function drawTextUnderlines() {
     visualLines.forEach(lineData => {
         // Only draw lines if we have width
         if (lineData.right <= lineData.left) return;
-        
+
         const line = document.createElementNS(svgNs, 'line');
         const x1 = lineData.left - parentRect.left;
         const x2 = lineData.right - parentRect.left;
-        
+
         // MidY is the invariant visual center of the text bounding box.
         // Adding ~0.70 times font size places the underline with a slight, comfortable gap beneath the text,
         // ignoring any irregular descenders or line-height bounding box inflation. 
         // This makes it immune to empty line height shifting offsets.
-        let y = lineData.midY + cFs * 0.70; 
+        let y = lineData.midY + cFs * 0.70;
 
         line.setAttribute('x1', x1);
         line.setAttribute('x2', x2);
@@ -463,7 +465,7 @@ function drawTextUnderlines() {
         line.setAttribute('stroke-width', '1.5');
         line.setAttribute('stroke-dasharray', '8,4');
         line.setAttribute('stroke-linecap', 'square');
-        
+
         svg.appendChild(line);
     });
 
@@ -615,9 +617,9 @@ function formatXTime() {
     const m = now.getMinutes().toString().padStart(2, '0');
     const ampm = h >= 12 ? '\u4e0b\u5348' : '\u4e0a\u5348';
     const hour12 = h % 12 || 12;
-    const year  = now.getFullYear();
+    const year = now.getFullYear();
     const month = now.getMonth() + 1;
-    const day   = now.getDate();
+    const day = now.getDate();
     return `${ampm} ${hour12}:${m} \u00b7 ${year}\u5e74${month}\u6708${day}\u65e5`;
 }
 
@@ -632,11 +634,62 @@ function toast(msg, type = 'info') {
     el.className = 'toast toast-' + type;
 
     const icons = {
-        error:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+        error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
         success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 10 11 15 8 12"/></svg>',
     };
     el.innerHTML = (icons[type] || '') + msg;
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add('show'));
     setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 2400);
+}
+
+// ========================================
+// Save to Server (文字入库)
+// ========================================
+function saveToServer() {
+    const title = document.getElementById('cardTitle').value.trim();
+    const content = document.getElementById('cardContent').value.trim();
+
+    if (!content) {
+        toast('正文不能为空', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('saveToServerBtn');
+    btn.disabled = true;
+    btn.textContent = '提交中…';
+
+    const params = new URLSearchParams();
+    params.append('title', title);
+    params.append('content', content);
+
+    fetch('http://192.168.2.3:9991/api/duanzi', {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-API-Key': 'f4Kx8QmW2rNv6TjP9yLs',
+        },
+        body: new URLSearchParams({
+            id: '0',
+            title: title,
+            content: content,
+        }),
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                toast(data.msg || '操作成功', 'success');
+            } else {
+                toast(data.msg || '操作失败', 'error');
+            }
+        })
+        .catch(err => {
+            console.error('入库请求失败:', err);
+            toast('请求失败：' + err.message, 'error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="3" ry="3"/></svg> 文字入库';
+        });
 }
