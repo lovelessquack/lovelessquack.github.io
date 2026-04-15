@@ -7,12 +7,13 @@
 
 // ── State ──
 let currentStyle = 'social';
+const DEFAULT_AVATAR_URL = 'https://pbs.twimg.com/profile_images/2034650591889342464/NU7k1cs-_400x400.jpg';
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
-    loadRandomAvatar();
-    loadXAvatar();
+    initAvatarField();
+    updateCardAvatars();
     // Default show card
     setTimeout(() => {
         const ta = document.getElementById('cardContent');
@@ -53,11 +54,61 @@ function bindEvents() {
     document.getElementById('saveBtn').addEventListener('click', saveCard);
     document.getElementById('copyBtn').addEventListener('click', copyCard);
     document.getElementById('saveToServerBtn').addEventListener('click', saveToServer);
+    const avatarInput = document.getElementById('cardAvatarUrl');
+    if (avatarInput) {
+        avatarInput.addEventListener('input', () => {
+            updateCardAvatars();
+        });
+    }
 }
 
 // ========================================
 // Avatar
 // ========================================
+function initAvatarField() {
+    const avatarInput = document.getElementById('cardAvatarUrl');
+    if (avatarInput && !avatarInput.value.trim()) {
+        avatarInput.value = DEFAULT_AVATAR_URL;
+    }
+}
+
+function getCardAvatarUrl() {
+    const avatarInput = document.getElementById('cardAvatarUrl');
+    return avatarInput ? avatarInput.value.trim() : '';
+}
+
+function buildAvatarImg(url, alt) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = alt;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    img.style.display = 'block';
+    img.crossOrigin = 'anonymous';
+    return img;
+}
+
+function setAvatarContent(container, content) {
+    if (!container) return;
+
+    container.innerHTML = '';
+    container.style.padding = '0';
+
+    if (typeof content === 'string') {
+        container.innerHTML = content;
+        const svgEl = container.querySelector('svg');
+        if (svgEl) {
+            svgEl.style.width = '100%';
+            svgEl.style.height = '100%';
+            svgEl.style.display = 'block';
+        }
+        return;
+    }
+
+    container.appendChild(content);
+}
+
 async function loadRandomAvatar() {
     try {
         const seed = Math.random().toString(36).substring(2, 10);
@@ -66,38 +117,30 @@ async function loadRandomAvatar() {
         const bg = bgColors[Math.floor(Math.random() * bgColors.length)];
         const res = await fetch(`https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}&backgroundColor=${bg}`);
         if (res.ok) {
-            const svgText = await res.text();
-            const avatarContainer = document.getElementById('displayProfileAvatar');
-            if (avatarContainer) {
-                avatarContainer.innerHTML = svgText;
-                avatarContainer.style.padding = '0';
-                const svgEl = avatarContainer.querySelector('svg');
-                if (svgEl) {
-                    svgEl.style.width = '100%';
-                    svgEl.style.height = '100%';
-                    svgEl.style.display = 'block';
-                }
-            }
+            return await res.text();
         }
     } catch (err) {
         console.error('获取随机头像失败:', err);
     }
+    return '';
 }
 
-// X 专属头像 — 固定使用 @lovelessquack 的真实头像
-function loadXAvatar() {
+async function updateCardAvatars() {
+    const profileAvatarEl = document.getElementById('displayProfileAvatar');
     const xAvatarEl = document.getElementById('displayXAvatar');
-    if (!xAvatarEl) return;
-    const img = document.createElement('img');
-    img.src = 'https://unavatar.io/x/lovelessquack';
-    img.alt = 'lovelessquack avatar';
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.objectFit = 'cover';
-    img.style.display = 'block';
-    img.crossOrigin = 'anonymous';
-    xAvatarEl.innerHTML = '';
-    xAvatarEl.appendChild(img);
+    const avatarUrl = getCardAvatarUrl();
+
+    if (avatarUrl) {
+        setAvatarContent(profileAvatarEl, buildAvatarImg(avatarUrl, 'custom avatar'));
+        setAvatarContent(xAvatarEl, buildAvatarImg(avatarUrl, 'custom avatar'));
+        return;
+    }
+
+    const randomAvatar = await loadRandomAvatar();
+    if (randomAvatar) {
+        setAvatarContent(profileAvatarEl, randomAvatar);
+        setAvatarContent(xAvatarEl, randomAvatar);
+    }
 }
 
 // ========================================

@@ -7,10 +7,12 @@ let chatHistory = [];
 // leftAvatar = 对方图标，rightAvatar = 自己图标
 let leftAvatarSvg = '';
 let rightAvatarSvg = '';
+const DEFAULT_AVATAR_URL = 'https://pbs.twimg.com/profile_images/2034650591889342464/NU7k1cs-_400x400.jpg';
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
+    initAvatarField();
     initAvatars();
     updateHeaderName();
 });
@@ -34,6 +36,9 @@ function bindEvents() {
 
     // 监听对方名字修改
     document.getElementById('chatTargetName').addEventListener('input', updateHeaderName);
+    document.getElementById('chatAvatarUrl').addEventListener('input', () => {
+        initAvatars();
+    });
 
     // Ctrl+Enter 快捷键
     document.getElementById('leftMessage').addEventListener('keydown', e => {
@@ -46,6 +51,22 @@ function bindEvents() {
     // 保存和复制
     document.getElementById('saveBtn').addEventListener('click', saveCard);
     document.getElementById('copyBtn').addEventListener('click', copyCard);
+}
+
+function initAvatarField() {
+    const avatarInput = document.getElementById('chatAvatarUrl');
+    if (avatarInput && !avatarInput.value.trim()) {
+        avatarInput.value = DEFAULT_AVATAR_URL;
+    }
+}
+
+function getChatAvatarUrl() {
+    const avatarInput = document.getElementById('chatAvatarUrl');
+    return avatarInput ? avatarInput.value.trim() : '';
+}
+
+function buildAvatarImageMarkup(url) {
+    return `<img src="${url}" alt="avatar" crossorigin="anonymous">`;
 }
 
 // 同步名字
@@ -120,8 +141,9 @@ function renderChat() {
 // Avatars
 // ========================================
 async function initAvatars() {
-    // Left avatar (对方) - 固定使用 X 社交头像
-    leftAvatarSvg = '<img src="https://unavatar.io/x/lovelessquack" alt="avatar" crossorigin="anonymous">';
+    const customAvatarUrl = getChatAvatarUrl();
+    // Left avatar (对方)
+    leftAvatarSvg = customAvatarUrl ? buildAvatarImageMarkup(customAvatarUrl) : await fetchRandomAvatar('left');
     // Right avatar (自己)
     rightAvatarSvg = await fetchRandomAvatar('right');
     
