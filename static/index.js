@@ -689,6 +689,24 @@ function toast(msg, type = 'info') {
 // ========================================
 // Save to Server (文字入库)
 // ========================================
+function buildRichTextContent(content) {
+    const normalized = content.replace(/\r\n/g, '\n');
+
+    return normalized
+        .split('\n')
+        .map(line => {
+            const escapedLine = line
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            return `<p>${escapedLine || '<br>'}</p>`;
+        })
+        .join('');
+}
+
 function saveToServer() {
     const title = document.getElementById('cardTitle').value.trim();
     const content = document.getElementById('cardContent').value.trim();
@@ -702,9 +720,7 @@ function saveToServer() {
     btn.disabled = true;
     btn.textContent = '提交中…';
 
-    const params = new URLSearchParams();
-    params.append('title', title);
-    params.append('content', content);
+    const richContent = buildRichTextContent(content);
 
     fetch('http://192.168.2.3:9991/api/duanzi', {
         method: 'POST',
@@ -716,7 +732,7 @@ function saveToServer() {
         body: new URLSearchParams({
             id: '0',
             title: title,
-            content: content,
+            content: richContent,
         }),
     })
         .then(res => res.json())
