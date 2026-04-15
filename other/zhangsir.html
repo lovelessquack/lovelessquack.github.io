@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="文字卡片生成器 - 生成精美的文字分享图">
+    <title>文字卡片生成器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+    /* =============================================
+       Tokens
+       ============================================= */
+    :root {
+        --bg:       #08080e;
+        --bg2:      #111118;
+        --surface:  #18182200;
+        --border:   rgba(255,255,255,.06);
+        --focus:    rgba(167,139,250,.45);
+        --text1:    #eeeef5;
+        --text2:    #9898b0;
+        --text3:    #55556a;
+        --accent:   #8b5cf6;
+        --accentL:  #a78bfa;
+        --glow:     rgba(139,92,246,.12);
+        --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
+        --fast: .22s ease; --smooth: .35s cubic-bezier(.25,.46,.45,.94);
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{font-size:16px;scroll-behavior:smooth}
+    body{
+        font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+        background:var(--bg);
+        color:var(--text1);
+        min-height:100vh;
+        overflow-x:hidden;
+    }
+
+    /* ---------- Ambient BG ---------- */
+    .bg-ornament{position:fixed;border-radius:50%;filter:blur(130px);opacity:.35;pointer-events:none;z-index:0}
+    .bg-ornament-1{width:520px;height:520px;background:radial-gradient(circle,rgba(139,92,246,.14),transparent 70%);top:-160px;right:-100px;animation:drift1 22s ease-in-out infinite}
+    .bg-ornament-2{width:420px;height:420px;background:radial-gradient(circle,rgba(59,130,246,.09),transparent 70%);bottom:-120px;left:-80px;animation:drift2 26s ease-in-out infinite}
+    @keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,20px) scale(1.06)}}
+    @keyframes drift2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-18px) scale(1.08)}}
+
+
+
+    /* ---------- Layout ---------- */
+    .app-container{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:36px 24px 64px}
+
+    /* ---------- Two-column ---------- */
+    .main-content{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start}
+
+    /* ---------- Panels ---------- */
+    .input-panel,.preview-panel{
+        background:var(--bg2);border:1px solid var(--border);
+        border-radius:var(--r-xl);padding:30px;
+        animation:fadeUp .55s ease-out both;
+    }
+    .input-panel{animation-delay:.08s}
+    .preview-panel{animation-delay:.16s;position:sticky;top:24px}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+    .section-title{
+        display:flex;align-items:center;gap:10px;
+        font-size:1.05rem;font-weight:600;margin-bottom:24px;color:var(--text1);
+    }
+    .section-icon{
+        display:inline-flex;align-items:center;justify-content:center;
+        width:36px;height:36px;background:var(--glow);border-radius:var(--r-sm);
+        color:var(--accentL);font-size:1.1rem;
+    }
+
+    /* ---------- Form ---------- */
+    .form-group{margin-bottom:22px}
+    .form-label{display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:500;color:var(--text2);margin-bottom:8px}
+    .tag{font-size:.65rem;padding:2px 7px;border-radius:20px;font-weight:500}
+    .tag-optional{color:var(--text3);background:rgba(255,255,255,.04);border:1px solid var(--border)}
+    .tag-required{color:var(--accentL);background:var(--glow)}
+
+    .form-input,.form-textarea{
+        width:100%;background:rgba(14,14,22,.7);border:1px solid var(--border);
+        border-radius:var(--r-md);padding:13px 15px;font-size:.92rem;
+        color:var(--text1);font-family:inherit;outline:none;transition:var(--smooth);
+    }
+    .form-input::placeholder,.form-textarea::placeholder{color:var(--text3)}
+    .form-input:focus,.form-textarea:focus{border-color:var(--focus);box-shadow:0 0 0 3px var(--glow)}
+    .form-textarea{resize:vertical;min-height:150px;line-height:1.75}
+    .char-count{text-align:right;font-size:.72rem;color:var(--text3);margin-top:5px}
+
+    /* ---------- Generate Btn ---------- */
+    .btn-generate{
+        width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+        padding:15px 0;background:linear-gradient(135deg,var(--accent),#6d28d9);
+        border:none;border-radius:var(--r-md);color:#fff;
+        font-size:.98rem;font-weight:600;font-family:inherit;cursor:pointer;
+        box-shadow:0 4px 20px rgba(139,92,246,.28);
+        transition:var(--smooth);position:relative;overflow:hidden;
+    }
+    .btn-generate:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(139,92,246,.4)}
+    .btn-generate:active{transform:translateY(0)}
+    .btn-spark{font-style:normal}
+
+    /* ---------- Preview Area ---------- */
+    .preview-area{display:flex;align-items:center;justify-content:center;min-height:280px}
+
+    .empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+    .empty-glyph{
+        font-size:3.2rem;margin-bottom:12px;opacity:.18;
+        font-family:-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;font-weight:700;
+    }
+    .empty-state p{font-size:.88rem;margin-bottom:3px}
+    .empty-sub{font-size:.76rem;opacity:.55}
+
+    /* =============================================
+       Share Card — Magazine / Editorial Style
+       ============================================= */
+    .card-wrapper{
+        width:100%;display:flex;justify-content:center;
+        animation:cardPop .45s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes cardPop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+    .share-card{
+        position:relative;overflow:hidden;
+        border-radius:0;
+        display:flex;flex-direction:column;
+        background: #fafaf8;
+        color: #2a2a2a;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    /* --- Accent side stripe --- */
+    .card-accent-stripe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(180deg, #e8b4b8 0%, #d4a0a6 30%, #b88a8f 60%, #a07478 100%);
+        z-index: 2;
+    }
+
+    /* --- Subtle dot pattern --- */
+    .card-pattern {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.35;
+        background-image: radial-gradient(circle, #d0d0d0 0.6px, transparent 0.6px);
+        background-size: 16px 16px;
+    }
+
+    /* --- Card Body --- */
+    .card-body{
+        position:relative;z-index:1;
+        display:flex;flex-direction:column;justify-content:flex-start;
+        flex:1;
+        padding: 36px 32px 28px 32px;
+        text-align:left;
+    }
+
+    /* --- Profile area --- */
+    .card-profile-area {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+    .profile-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        background: linear-gradient(135deg, #f0ece8, #e0dcd8);
+        overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        border: 2px solid rgba(0,0,0,0.04);
+    }
+    .profile-avatar svg, .profile-avatar img {
+        width: 100%; height: 100%; display: block; object-fit: cover;
+    }
+    .profile-info { display: flex; flex-direction: column; gap: 3px; }
+    .profile-name {
+        font-size: 0.92em; font-weight: 600; color: #1a1a1a;
+        display: flex; align-items: center; gap: 6px;
+        font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .profile-sub {
+        font-size: 0.72em; color: #999;
+        font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    /* --- Title --- */
+    .card-title-area { margin-bottom: 16px; }
+    .card-title-area h3 {
+        font-family: 'Noto Serif SC', -apple-system, "PingFang SC", "Microsoft YaHei", serif;
+        font-weight: 700;
+        font-size: 1.35em;
+        line-height: 1.5;
+        color: #111;
+        letter-spacing: 0.04em;
+    }
+
+    /* --- Content --- */
+    .card-content-area { margin-top: 0; }
+    .card-content-area p {
+        font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+        font-weight: 400;
+        line-height: 2.1;
+        letter-spacing: 0.04em;
+        word-break: break-word;
+        color: #3a3a3a;
+        font-size: 0.95em;
+    }
+    .card-content-area .empty-line {
+        height: 0.8em;
+    }
+
+    /* --- Author signature --- */
+    .card-author-area {
+        margin-top: 28px;
+        text-align: right;
+        font-family: 'Noto Serif SC', -apple-system, "PingFang SC", "Microsoft YaHei", serif;
+        font-size: 0.82em;
+        color: #999;
+        letter-spacing: 0.06em;
+    }
+    .author-dash { margin-right: 4px; }
+
+    /* --- Bottom decorative bar --- */
+    .card-bottom-bar {
+        height: 3px;
+        background: linear-gradient(90deg, #e8b4b8, #d4a0a6, #c8a882, #d4b896);
+        position: relative;
+        z-index: 2;
+    }
+
+    /* --- Date watermark --- */
+    .card-date {
+        position: relative;
+        z-index: 2;
+        text-align: right;
+        padding: 10px 28px 14px;
+        font-size: 0.62em;
+        color: #c8c8c8;
+        font-family: 'Inter', -apple-system, sans-serif;
+        letter-spacing: 0.08em;
+        background: #fafaf8;
+    }
+
+    /* =============================================
+       Preview Actions
+       ============================================= */
+    .preview-actions{margin-top:20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+    .preview-btns{display:flex;gap:10px;justify-content:center}
+
+    .btn-save{
+        display:inline-flex;align-items:center;gap:8px;
+        padding:11px 26px;
+        background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.28);
+        border-radius:var(--r-md);color:var(--accentL);
+        font-size:.88rem;font-weight:500;font-family:inherit;cursor:pointer;
+        transition:var(--smooth);
+    }
+    .btn-save:hover{background:rgba(139,92,246,.18);border-color:rgba(139,92,246,.45);transform:translateY(-1px)}
+    .save-hint{display:block;font-size:.72rem;color:var(--text3);margin-top:8px}
+
+    /* =============================================
+       Toast
+       ============================================= */
+    .toast{
+        position:fixed;top:24px;left:50%;
+        transform:translateX(-50%) translateY(-110px);
+        background:rgba(22,22,34,.92);backdrop-filter:blur(14px);
+        border:1px solid var(--border);border-radius:var(--r-md);
+        padding:13px 22px;font-size:.88rem;color:var(--text1);
+        box-shadow:0 8px 36px rgba(0,0,0,.45);z-index:9999;
+        transition:transform .38s cubic-bezier(.34,1.56,.64,1);
+        display:flex;align-items:center;gap:9px;
+    }
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast-error{border-color:rgba(239,68,68,.3)!important}
+    .toast-success{border-color:rgba(52,211,153,.3)!important}
+
+    /* =============================================
+       Saving overlay
+       ============================================= */
+    .saving-overlay{
+        position:fixed;inset:0;z-index:9998;
+        background:rgba(8,8,14,.6);backdrop-filter:blur(6px);
+        display:flex;align-items:center;justify-content:center;
+        animation:fadeIn .2s ease;
+    }
+    .saving-spinner{
+        width:42px;height:42px;
+        border:3px solid rgba(255,255,255,.1);border-top-color:var(--accentL);
+        border-radius:50%;animation:spin .7s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+    /* =============================================
+       Responsive
+       ============================================= */
+    @media(max-width:900px){
+        .main-content{grid-template-columns:1fr}
+        .preview-panel{position:static}
+        .app-container{padding:20px 14px 40px}
+    }
+    @media(max-width:480px){
+        .input-panel,.preview-panel{padding:18px}
+    }
+    </style>
+</head>
+<body>
+
+
+    <!-- Background -->
+    <div class="bg-ornament bg-ornament-1"></div>
+    <div class="bg-ornament bg-ornament-2"></div>
+
+    <div class="app-container">
+        <main class="main-content">
+            <!-- ====== 左：输入区 ====== -->
+            <section class="input-panel">
+                <h2 class="section-title">
+                    <span class="section-icon">✎</span>
+                    编辑内容
+                </h2>
+
+                <div class="form-group">
+                    <label for="cardTitle" class="form-label">标题 <span class="tag tag-optional">选填</span></label>
+                    <input type="text" id="cardTitle" class="form-input" placeholder="给卡片起个标题..." maxlength="30">
+                </div>
+
+                <div class="form-group">
+                    <label for="cardContent" class="form-label">正文 <span class="tag tag-required">必填</span></label>
+                    <textarea id="cardContent" class="form-textarea" placeholder="在这里写下你想分享的文字..." rows="8"></textarea>
+                    <div class="char-count" id="charCount">0 字</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cardAuthor" class="form-label">署名 <span class="tag tag-optional">选填</span></label>
+                    <input type="text" id="cardAuthor" class="form-input" placeholder="作者、出处或昵称..." maxlength="20" value="BTC张Sir🅱️">
+                </div>
+
+                <div class="form-group">
+                    <label for="cardAvatarUrl" class="form-label">头像链接 <span class="tag tag-optional">选填</span></label>
+                    <input type="text" id="cardAvatarUrl" class="form-input" placeholder="留空则使用随机头像..." value="https://pbs.twimg.com/profile_images/2036235955619897346/MlDTIrBN_400x400.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label for="cardSubtitle" class="form-label">签名/简介 <span class="tag tag-optional">选填</span></label>
+                    <input type="text" id="cardSubtitle" class="form-input" placeholder="一句话简介..." maxlength="30" value="人称反指王">
+                </div>
+
+                <button class="btn-generate" id="generateBtn">
+                    <span class="btn-spark">⚡</span>
+                    生成卡片
+                </button>
+            </section>
+
+            <!-- ====== 右：预览区 ====== -->
+            <section class="preview-panel">
+                <h2 class="section-title">
+                    <span class="section-icon">☷</span>
+                    卡片预览
+                </h2>
+
+                <div class="preview-area" id="previewArea">
+                    <!-- 空状态 -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-glyph">卡</div>
+                        <p>输入文字后点击生成</p>
+                        <p class="empty-sub">自适应尺寸</p>
+                    </div>
+
+                    <!-- 卡片容器（截图区域） -->
+                    <div id="cardWrapper" class="card-wrapper" style="display:none">
+                        <div id="shareCard" class="share-card">
+                            <!-- 左侧装饰条 -->
+                            <div class="card-accent-stripe"></div>
+                            <!-- 点阵纹理 -->
+                            <div class="card-pattern"></div>
+                            <!-- 内容 -->
+                            <div class="card-body">
+                                <!-- 用户资料区 -->
+                                <div class="card-profile-area" id="cardProfileArea" style="display:none">
+                                    <div class="profile-avatar" id="displayProfileAvatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </div>
+                                    <div class="profile-info">
+                                        <div class="profile-name">
+                                            <span id="displayProfileName"></span>
+                                        </div>
+                                        <div class="profile-sub" id="displayProfileSub"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 标题 -->
+                                <div class="card-title-area" id="cardTitleArea" style="display:none">
+                                    <h3 id="displayTitle"></h3>
+                                </div>
+
+                                <!-- 正文 -->
+                                <div class="card-content-area">
+                                    <p id="displayContent"></p>
+                                </div>
+
+
+                            </div>
+                            <!-- 底部日期 -->
+                            <div class="card-date" id="cardDate"></div>
+                            <!-- 底部装饰条 -->
+                            <div class="card-bottom-bar"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="preview-actions" id="previewActions" style="display:none">
+                    <div class="preview-btns">
+                        <button class="btn-save" id="saveBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            保存为图片
+                        </button>
+                        <button class="btn-save" id="copyBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            复制图片
+                        </button>
+                    </div>
+                    <span class="save-hint">保存或复制到剪贴板后可直接粘贴分享</span>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+    /**
+     * 文字卡片生成器 — 杂志风
+     * 自适应布局，html2canvas 截图
+     */
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', () => {
+        bindEvents();
+        loadAvatar();
+        setTimeout(() => {
+            const ta = document.getElementById('cardContent');
+            if (ta && ta.value) {
+                document.getElementById('charCount').textContent = ta.value.length + ' 字';
+                generateCard();
+            }
+        }, 100);
+    });
+
+    // ========================================
+    // Events
+    // ========================================
+    function bindEvents() {
+        const ta = document.getElementById('cardContent');
+        const cc = document.getElementById('charCount');
+        ta.addEventListener('input', () => { cc.textContent = ta.value.length + ' 字'; });
+
+        // Ctrl+Enter 快捷键
+        ta.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); generateCard(); }
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', generateCard);
+        document.getElementById('saveBtn').addEventListener('click', saveCard);
+        document.getElementById('copyBtn').addEventListener('click', copyCard);
+    }
+
+    // ========================================
+    // Avatar
+    // ========================================
+    function loadAvatar() {
+        const avatarUrl = document.getElementById('cardAvatarUrl').value.trim();
+        const avatarContainer = document.getElementById('displayProfileAvatar');
+        if (!avatarContainer) return;
+
+        if (avatarUrl) {
+            // 使用用户提供的头像 URL
+            const img = document.createElement('img');
+            img.src = avatarUrl;
+            img.alt = 'avatar';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            img.style.display = 'block';
+            img.crossOrigin = 'anonymous';
+            avatarContainer.innerHTML = '';
+            avatarContainer.style.padding = '0';
+            avatarContainer.appendChild(img);
+        } else {
+            // 随机头像
+            loadRandomAvatar();
+        }
+    }
+
+    async function loadRandomAvatar() {
+        try {
+            const seed = Math.random().toString(36).substring(2, 10);
+            const bgColors = ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf', 'a8edbb', 'f9c6e0'];
+            const bg = bgColors[Math.floor(Math.random() * bgColors.length)];
+            const res = await fetch(`https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}&backgroundColor=${bg}`);
+            if (res.ok) {
+                const svgText = await res.text();
+                const avatarContainer = document.getElementById('displayProfileAvatar');
+                if (avatarContainer) {
+                    avatarContainer.innerHTML = svgText;
+                    avatarContainer.style.padding = '0';
+                    const svgEl = avatarContainer.querySelector('svg');
+                    if (svgEl) {
+                        svgEl.style.width = '100%';
+                        svgEl.style.height = '100%';
+                        svgEl.style.display = 'block';
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('获取随机头像失败:', err);
+        }
+    }
+
+    // ========================================
+    // Generate
+    // ========================================
+    function generateCard() {
+        const title = document.getElementById('cardTitle').value.trim();
+        const content = document.getElementById('cardContent').value.trim();
+        const author = document.getElementById('cardAuthor').value.trim();
+        const subtitleField = document.getElementById('cardSubtitle');
+        const subtitle = subtitleField ? subtitleField.value.trim() : '';
+
+        if (!content) { toast('请输入正文内容', 'error'); document.getElementById('cardContent').focus(); return; }
+
+        // 隐藏空态
+        document.getElementById('emptyState').style.display = 'none';
+        const wrapper = document.getElementById('cardWrapper');
+        wrapper.style.display = 'flex';
+        document.getElementById('previewActions').style.display = 'block';
+
+        // 触发入场动画
+        wrapper.style.animation = 'none';
+        void wrapper.offsetHeight;
+        wrapper.style.animation = '';
+
+        // ── 标题 ──
+        const titleArea = document.getElementById('cardTitleArea');
+        if (title) {
+            titleArea.style.display = 'block';
+            document.getElementById('displayTitle').textContent = title;
+        } else {
+            titleArea.style.display = 'none';
+        }
+
+        // ── 正文 ──
+        const contentArea = document.getElementById('displayContent');
+        contentArea.innerHTML = '';
+        const lines = content.split('\n');
+        lines.forEach((line, i) => {
+            if (line.trim() === '') {
+                const spacer = document.createElement('div');
+                spacer.className = 'empty-line';
+                contentArea.appendChild(spacer);
+            } else {
+                const span = document.createElement('span');
+                span.textContent = line;
+                contentArea.appendChild(span);
+                if (i < lines.length - 1 && lines[i + 1].trim() !== '') {
+                    contentArea.appendChild(document.createElement('br'));
+                }
+            }
+        });
+
+        // ── Profile ──
+        const profileArea = document.getElementById('cardProfileArea');
+        loadAvatar();
+
+        if (author) {
+            if (profileArea) {
+                profileArea.style.display = '';
+                document.getElementById('displayProfileName').textContent = author;
+            }
+        } else {
+            if (profileArea) profileArea.style.display = 'none';
+        }
+
+        if (profileArea) {
+            const subEl = document.getElementById('displayProfileSub');
+            if (subtitle) {
+                subEl.textContent = subtitle;
+                subEl.style.display = 'block';
+            } else {
+                subEl.style.display = 'none';
+            }
+        }
+
+        // ── 日期水印 ──
+        const dateEl = document.getElementById('cardDate');
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        dateEl.textContent = `${y}.${m}.${d}`;
+
+        // ── 计算尺寸 ──
+        layoutCard(content);
+    }
+
+    // ========================================
+    // Smart Layout
+    // ========================================
+    function layoutCard(content) {
+        const card = document.getElementById('shareCard');
+        const titleEl = document.getElementById('displayTitle');
+        const contentEl = document.getElementById('displayContent');
+        const bodyEl = card.querySelector('.card-body');
+
+        const previewW = document.getElementById('previewArea').clientWidth - 16;
+        const len = content.length;
+
+        let w;
+        if (len <= 30) w = 320;
+        else if (len <= 80) w = 360;
+        else if (len <= 150) w = 400;
+        else if (len <= 300) w = 440;
+        else if (len <= 500) w = 480;
+        else w = 520;
+
+        const maxW = previewW > 0 ? previewW : 360;
+        if (w > maxW) w = maxW;
+
+        let cFs = 14;
+        let tFs = 20;
+
+        card.style.width = w + 'px';
+        card.style.height = 'auto';
+        if (titleEl) titleEl.style.fontSize = tFs + 'px';
+        contentEl.style.fontSize = cFs + 'px';
+        contentEl.style.lineHeight = Math.round(cFs * 2.1) + 'px';
+        contentEl.querySelectorAll('.empty-line').forEach(sp => sp.style.height = Math.round(cFs * 0.8) + 'px');
+
+        requestAnimationFrame(() => {
+            const naturalH = bodyEl.scrollHeight;
+            card.style.height = naturalH + 'px';
+        });
+    }
+
+    // ========================================
+    // Save Card as PNG
+    // ========================================
+    function saveCard() {
+        const card = document.getElementById('shareCard');
+        if (!card) return;
+
+        if (typeof html2canvas === 'undefined') {
+            toast('截图库加载失败，请检查网络或刷新页面', 'error');
+            return;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'saving-overlay';
+        overlay.innerHTML = '<div class="saving-spinner"></div>';
+        document.body.appendChild(overlay);
+
+        html2canvas(card, {
+            scale: 3,
+            backgroundColor: null,
+            allowTaint: true,
+            useCORS: true,
+        }).then(canvas => {
+            overlay.remove();
+            try {
+                const dataUrl = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = 'card-' + Date.now() + '.png';
+                link.href = dataUrl;
+                link.click();
+                toast('图片已保存 ✓', 'success');
+            } catch (e) {
+                console.error(e);
+                toast('保存失败（可能因浏览器限制），请直接截图', 'error');
+            }
+        }).catch(err => {
+            overlay.remove();
+            console.error(err);
+            toast('渲染失败，请尝试原生截图', 'error');
+        });
+    }
+
+    // ========================================
+    // Copy Card to Clipboard
+    // ========================================
+    function copyCard() {
+        const card = document.getElementById('shareCard');
+        if (!card) return;
+
+        if (!navigator.clipboard || !navigator.clipboard.write) {
+            toast('当前环境不支持直接复制（请尝试点击保存或截图）', 'error');
+            return;
+        }
+
+        if (typeof html2canvas === 'undefined') {
+            toast('截图库仍在加载，请稍后再试', 'error');
+            return;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'saving-overlay';
+        overlay.innerHTML = '<div class="saving-spinner"></div>';
+        document.body.appendChild(overlay);
+
+        html2canvas(card, {
+            scale: 3,
+            backgroundColor: null,
+            allowTaint: true,
+            useCORS: true,
+        }).then(canvas => {
+            canvas.toBlob(blob => {
+                if (!blob) { overlay.remove(); toast('生成 Blob 失败', 'error'); return; }
+
+                navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]).then(() => {
+                    overlay.remove();
+                    toast('已复制到剪贴板 ✓', 'success');
+                }).catch(e => {
+                    overlay.remove();
+                    console.error(e);
+                    toast('复制失败，可能是浏览器权限限制', 'error');
+                });
+            }, 'image/png');
+        }).catch(err => {
+            overlay.remove();
+            console.error(err);
+            toast('复制渲染失败', 'error');
+        });
+    }
+
+    // ========================================
+    // Toast
+    // ========================================
+    function toast(msg, type = 'info') {
+        const old = document.querySelector('.toast');
+        if (old) old.remove();
+
+        const el = document.createElement('div');
+        el.className = 'toast toast-' + type;
+
+        const icons = {
+            error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+            success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 10 11 15 8 12"/></svg>',
+        };
+        el.innerHTML = (icons[type] || '') + msg;
+        document.body.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('show'));
+        setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 2400);
+    }
+    </script>
+</body>
+</html>
