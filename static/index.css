@@ -460,6 +460,96 @@ body{
     height: 0.9em;
 }
 
+/* -- xiaohongshu (小红书风) -- */
+.theme-xiaohongshu {
+    background-color: #fdfdfd;
+    background-image: 
+        linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: center top;
+    color: #333333;
+    border-radius: 8px;
+}
+.theme-xiaohongshu .card-texture { opacity: 0; }
+.theme-xiaohongshu .card-header-deco, .theme-xiaohongshu .card-footer-deco { display: none; }
+.theme-xiaohongshu .card-title-area, .theme-xiaohongshu .card-profile-area, .theme-xiaohongshu .card-content-area { order: 0; }
+
+.theme-xiaohongshu .card-body {
+    padding: 30px 24px;
+}
+
+.theme-xiaohongshu .card-title-area {
+    order: 1; 
+    display: flex !important; 
+    flex-direction: column; 
+    align-self: flex-start;
+    position: relative;
+    z-index: 2;
+}
+
+.theme-xiaohongshu .card-title-area h3 {
+    color: #222;
+    font-size: 1.5em;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.theme-xiaohongshu .title-rule {
+    width: 100%;
+    height: 10px;
+    margin: 2px 0 0 0;
+    background: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2218%22%20height%3D%2210%22%3E%3Cpath%20d%3D%22M0%205%20Q%204.5%200%209%205%20T%2018%205%22%20fill%3D%22none%22%20stroke%3D%22%23ea4335%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") repeat-x;
+    background-size: 18px 10px;
+    opacity: 0.85;
+}
+
+.theme-xiaohongshu .card-profile-area {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    order: 2;
+    margin-top: 16px;
+    margin-bottom: 2px;
+}
+
+.theme-xiaohongshu .profile-avatar {
+    width: 32px; height: 32px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.theme-xiaohongshu .profile-name {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #444;
+    font-family: -apple-system, "PingFang SC", sans-serif;
+}
+
+.theme-xiaohongshu .profile-badge, .theme-xiaohongshu .profile-sub {
+    display: none !important;
+}
+
+.theme-xiaohongshu .card-content-area {
+    order: 3; 
+    margin-top: 14px; 
+}
+
+.theme-xiaohongshu .card-content-area p {
+    color: #222;
+    line-height: 2.1;
+    font-size: 1.05em;
+    font-weight: 400;
+    font-family: -apple-system, "PingFang SC", sans-serif;
+}
+
+.theme-xiaohongshu .card-content-area .empty-line {
+    height: 0.8em;
+}
+
+.theme-xiaohongshu .card-author-area {
+    display: none !important;
+}
+
 /* =============================================
    Preview Actions
    ============================================= */

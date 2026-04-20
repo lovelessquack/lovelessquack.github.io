@@ -317,8 +317,8 @@ function layoutCard(title, content, author) {
     let cFs = Math.min(Math.max(estimatedCfs, 13), 15);
 
     // Social mode gets a much larger title natively (max 32px) versus other modes (max 18px)
-    let tFsMulti = currentStyle === 'social' ? 2.0 : 1.15;
-    let tFsMax = currentStyle === 'social' ? 32 : 18;
+    let tFsMulti = (currentStyle === 'social' || currentStyle === 'xiaohongshu') ? 2.0 : 1.15;
+    let tFsMax = (currentStyle === 'social' || currentStyle === 'xiaohongshu') ? 32 : 18;
     let tFs = Math.min(Math.max(15, Math.floor(cFs * tFsMulti)), tFsMax);
 
 
