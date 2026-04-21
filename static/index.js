@@ -6,8 +6,8 @@
  */
 
 // ── State ──
-let currentStyle = 'social';
-const DEFAULT_AVATAR_URL = 'https://pbs.twimg.com/profile_images/2034650591889342464/NU7k1cs-_400x400.jpg';
+let currentStyle = 'xiaohongshu';
+const DEFAULT_AVATAR_URL = 'https://pbs.twimg.com/media/HGaKLjMacAAK6Vk?format=jpg';
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
