@@ -8,6 +8,7 @@
 // ── State ──
 let currentStyle = 'xiaohongshu';
 const DEFAULT_AVATAR_URL = 'https://pbs.twimg.com/media/HGaKLjMacAAK6Vk?format=jpg';
+const VERIFIED_BADGE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1d9bf0" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34Z"></path><path fill="#fff" d="M10.54 16.2 6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77Z"></path></svg>';
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
@@ -87,6 +88,22 @@ function buildAvatarImg(url, alt) {
     img.style.display = 'block';
     img.crossOrigin = 'anonymous';
     return img;
+}
+
+function syncProfileBadge() {
+    const badgeEl = document.querySelector('#cardProfileArea .profile-badge');
+    if (!badgeEl) return;
+
+    const isVerifiedStyle = currentStyle === 'xiaohongshu';
+    badgeEl.classList.toggle('profile-badge-verified', isVerifiedStyle);
+
+    if (isVerifiedStyle) {
+        badgeEl.innerHTML = VERIFIED_BADGE_SVG;
+        badgeEl.setAttribute('aria-hidden', 'true');
+    } else {
+        badgeEl.textContent = '\uD83D\uDC4D';
+        badgeEl.removeAttribute('aria-hidden');
+    }
 }
 
 function setAvatarContent(container, content) {
@@ -217,6 +234,7 @@ function generateCard() {
     const profileArea = document.getElementById('cardProfileArea');
     const xHeader = document.getElementById('cardXHeader');
     const xFooter = document.getElementById('xFooter');
+    syncProfileBadge();
 
     if (currentStyle === 'x') {
         // — X 模式：展示 X专属头部，隐藏其他
@@ -519,6 +537,27 @@ function drawTextUnderlines() {
     wrapper.style.transform = oldTrans;
 }
 
+function tuneExportClone(clonedDoc) {
+    const lines = clonedDoc.querySelectorAll('#textUnderlinesSvg line');
+    const contentEl = clonedDoc.getElementById('displayContent');
+    if (contentEl && lines.length > 0) {
+        const cFs = parseFloat(window.getComputedStyle(contentEl).fontSize) || 15;
+        lines.forEach(l => {
+            const y = parseFloat(l.getAttribute('y1'));
+            l.setAttribute('y1', y + cFs * 0.15);
+            l.setAttribute('y2', y + cFs * 0.15);
+        });
+    }
+
+    const clonedCard = clonedDoc.getElementById('shareCard');
+    if (clonedCard && clonedCard.classList.contains('theme-xiaohongshu')) {
+        clonedDoc.querySelectorAll('#cardProfileArea .profile-badge').forEach(badge => {
+            badge.style.position = 'relative';
+            badge.style.top = '2px';
+        });
+    }
+}
+
 // ========================================
 // Save Card as PNG (html2canvas)
 // ========================================
@@ -547,17 +586,7 @@ function saveCard() {
         allowTaint: true,
         useCORS: true,
         onclone: (clonedDoc) => {
-            const lines = clonedDoc.querySelectorAll('#textUnderlinesSvg line');
-            const contentEl = clonedDoc.getElementById('displayContent');
-            if (contentEl && lines.length > 0) {
-                const cFs = parseFloat(window.getComputedStyle(contentEl).fontSize) || 15;
-                // Shift down ~0.15em for exported image to natively fight html2canvas's own text baseline drop
-                lines.forEach(l => {
-                    const y = parseFloat(l.getAttribute('y1'));
-                    l.setAttribute('y1', y + cFs * 0.15);
-                    l.setAttribute('y2', y + cFs * 0.15);
-                });
-            }
+            tuneExportClone(clonedDoc);
         }
     }).then(canvas => {
         if (texture) texture.style.opacity = '';
@@ -614,17 +643,7 @@ function copyCard() {
         allowTaint: true,
         useCORS: true,
         onclone: (clonedDoc) => {
-            const lines = clonedDoc.querySelectorAll('#textUnderlinesSvg line');
-            const contentEl = clonedDoc.getElementById('displayContent');
-            if (contentEl && lines.length > 0) {
-                const cFs = parseFloat(window.getComputedStyle(contentEl).fontSize) || 15;
-                // Shift down ~0.15em
-                lines.forEach(l => {
-                    const y = parseFloat(l.getAttribute('y1'));
-                    l.setAttribute('y1', y + cFs * 0.15);
-                    l.setAttribute('y2', y + cFs * 0.15);
-                });
-            }
+            tuneExportClone(clonedDoc);
         }
     }).then(canvas => {
         if (texture) texture.style.opacity = '';
