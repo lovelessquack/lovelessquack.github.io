@@ -1,34 +1,82 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工具箱导航</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="static/index.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>网站已关闭</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #ffffff;
+      font-family: 'Noto Sans SC', 'DM Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 2rem;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: up .9s cubic-bezier(.22,1,.36,1) .2s forwards;
+    }
+
+    .tag {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 1.6rem;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 8vw, 4.5rem);
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: #111;
+      margin-bottom: 2rem;
+    }
+
+    h1 span {
+      display: block;
+      color: #ccc;
+    }
+
+    .bar {
+      width: 32px;
+      height: 2px;
+      background: #111;
+      margin-bottom: 2rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+      font-weight: 300;
+      line-height: 1.9;
+      color: #888;
+      max-width: 280px;
+    }
+
+    @keyframes up {
+      to { opacity: 1; transform: none; }
+    }
+  </style>
 </head>
 <body>
-    <!-- Top Nav -->
-    <nav class="top-nav">
-        <div class="nav-container">
-            <a href="index.html" class="nav-item active">首页</a>
-            <a href="html/card.html" class="nav-item">文字卡片</a>
-            <a href="html/chat.html" class="nav-item">聊天记录</a>
-        </div>
-    </nav>
-
-    <!-- Background -->
-    <div class="bg-ornament bg-ornament-1"></div>
-    <div class="bg-ornament bg-ornament-2"></div>
-
-    <div class="app-container" style="display:flex; justify-content:center; align-items:center; height:60vh;">
-        <header class="app-header">
-             <div class="logo-icon" style="background:transparent; border:1px solid rgba(255,255,255,0.2); margin: 0 auto 20px;">✦</div>
-             <h1>工具导航</h1>
-             <p class="subtitle" style="margin-top:10px;">请在上方导航栏中选择功能模块：[ 文字卡片 ] 或 [ 聊天记录 ]</p>
-        </header>
-    </div>
+  <div class="wrap">
+    <p class="tag">Site Closed</p>
+    <h1>感谢<br/>陪伴<span>再见。</span></h1>
+    <div class="bar"></div>
+    <p>此网站已停止运营。<br/>感谢每一位曾经到来的你。</p>
+  </div>
 </body>
 </html>
